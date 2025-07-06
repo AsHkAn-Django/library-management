@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+    <div class="container my-5">
+        <h2 class="text-center mb-4">Are you sure you want to return "{{ book.title }}"?</h2>
+        <form action="" method="post">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button type="submit" class="btn btn-outline-primary w-100">Return</button>
+        </form>
+    </div>
+{% endblock content %}

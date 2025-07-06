@@ -1,0 +1,37 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+
+<div class="container my-5">
+    {% if messages %}
+    <div class="alert-container mb-4">
+        <ul class="list-unstyled">
+            {% for message in messages %}
+            <li class="alert {% if message.tags %} alert-{{ message.tags }} {% endif %}">
+                {{ message }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <h2 class="text-center mb-4">List of Books</h2>
+
+    <div class="row">
+        {% for book in books %}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header text-center font-weight-bold">{{ book.title }}</div>
+                <div class="card-body">
+                    <p class="card-text">Stock: {{ book.stock }}</p>
+                    <a href="{% url 'myApp:borrow_book' book.pk %}" class="btn btn-outline-info w-100 mb-2">Borrow it</a>
+                    <a href="{% url 'myApp:return_book' book.pk %}" class="btn btn-outline-warning w-100">Return it</a>
+                </div>
+                <div class="card-footer text-muted text-center">by {{ book.author.name }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock content %}

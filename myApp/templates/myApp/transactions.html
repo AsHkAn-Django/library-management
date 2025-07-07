@@ -1,41 +1,23 @@
 {% extends 'base.html' %}
+{% load django_bootstrap5 %}
 
 {% block content %}
 
 <div class="container my-5">
 
-  <h2 class="text-center mb-4 text-primary">Your Transactions</h2>
+  <h2>Enter the book code and choose the action:</h2>
 
-  <div class="row">
-    
-    <div class="col-md-6 mb-4">
-      <h4 class="text-center mb-3 text-success">Your Borrowed Books</h4>
-      <div class="list-group">
-        {% for borrow in borrows %}
-          <a href="#" class="list-group-item list-group-item-action list-group-item-info">
-            You borrowed "<strong>{{ borrow.book.title }}</strong>" on {{ borrow.date }}
-          </a>
-        {% empty %}
-          <p class="text-muted text-center">You have no borrowed books.</p>
-        {% endfor %}
-      </div>
-    </div>
+  <form action="" method="post">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <button type="submit" class="btn btn-outline-primary">Go</button>
+  </form>
 
-    <div class="col-md-6">
-      <h4 class="text-center mb-3 text-warning">Your Returned Books</h4>
-      <div class="list-group">
-        {% for return in returns %}
-          <a href="#" class="list-group-item list-group-item-action list-group-item-success">
-            You returned "<strong>{{ return.book.title }}</strong>" on {{ return.date }}
-          </a>
-        {% empty %}
-          <p class="text-muted text-center">You have no returned books.</p>
-        {% endfor %}
-      </div>
-    </div>
 
-  </div>
-  
+  {% if result %}
+    <h2>{{ result }}</h2>
+  {% endif %}
+
 </div>
 
 {% endblock content %}

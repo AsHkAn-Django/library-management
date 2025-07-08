@@ -4,6 +4,9 @@ from django.views import generic
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+import barcode
+from barcode.writer import ImageWriter
+
 from .models import Author, Book, BorrowRecord
 from .forms import BorrowAndReturnForm
 

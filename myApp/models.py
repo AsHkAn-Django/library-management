@@ -17,6 +17,7 @@ class Book(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
     stock = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     barcode = models.CharField(max_length=250, unique=True)
+    barcode_image = models.ImageField(upload_to='images/barcode/', blank=True, null=True)
 
     @property
     def is_available(self):
@@ -47,7 +48,7 @@ class BorrowRecord(models.Model):
 
     class Meta:
         ordering = ['-borrowed_at']
-        unique_together = ('book', 'borrower', 'returned_at')  
+        unique_together = ('book', 'borrower', 'returned_at')
 
     def return_book(self):
         """Mark the book as returned and increase stock."""

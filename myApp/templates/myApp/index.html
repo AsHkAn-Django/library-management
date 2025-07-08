@@ -15,6 +15,11 @@
                     <p class="card-text">Stock: {{ book.stock }}</p>
                     <a href="" class="btn btn-outline-info">Borrow it</a>
                     <a href="" class="btn btn-outline-warning ">Return it</a>
+
+                    {% if user.is_staff %}
+                    <a href="{% url 'myApp:edit-book' book.pk %}" class="btn btn-outline-primary ">Edit book</a>
+                    {% endif %}
+
                 </div>
                 <div class="card-footer text-muted text-center">by {{ book.author.name }}</div>
             </div>

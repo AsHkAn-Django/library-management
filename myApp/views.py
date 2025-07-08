@@ -3,12 +3,14 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import generic
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.conf import settings
 
 import barcode
 from barcode.writer import ImageWriter
+import os
 
 from .models import Author, Book, BorrowRecord
-from .forms import BorrowAndReturnForm
+from .forms import BorrowAndReturnForm, BookForm, AuthorForm
 
 
 
@@ -63,5 +65,48 @@ def book_transactions(request):
     return render(request, 'myApp/transactions.html', {'form': form, 'result': result})
 
 
+class AuthorCreateView(generic.CreateView):
+    model = Author
+    form_class = AuthorForm
+    template_name = "myApp/add_author.html"
+    success_url = reverse_lazy('myApp:add-book')
 
 
+class BookCreateView(generic.CreateView):
+    model = Book
+    form_class = BookForm
+    template_name = "myApp/add_book.html"
+    success_url = reverse_lazy('myApp:home')
+
+    def form_valid(self, form):
+        create_and_assign_barcode(form)
+        return super().form_valid(form)
+
+
+class BookUpdateView(generic.UpdateView):
+    model = Book
+    form_class = BookForm
+    template_name = "myApp/edit_book.html"
+    success_url = reverse_lazy('myApp:home')
+
+    def form_valid(self, form):
+        if not form.instance.barcode_image:
+            create_and_assign_barcode(form)
+        return super().form_valid(form)
+
+
+def create_and_assign_barcode(form):
+    barcode_str = form.cleaned_data['barcode']
+
+    # Generate barcode image
+    BarcodeClass = barcode.get_barcode_class('code128')
+    ean = BarcodeClass(barcode_str, writer=ImageWriter())
+
+    # Save to media path
+    file_name = f"{barcode_str}.png"
+    file_path = os.path.join(settings.MEDIA_ROOT, 'images', 'barcode', file_name)
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    ean.save(file_path[:-4]) # remove ".png" - save() adds it
+
+    # Save image path to model field
+    form.instance.barcode_image = f"images/barcode/{file_name}"

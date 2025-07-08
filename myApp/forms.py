@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 
+from .models import Book, Author
 
 
 SELECT_CHOICES = [
@@ -23,3 +24,18 @@ class BorrowAndReturnForm(forms.Form):
         label="Borrower (only for borrow)",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+
+
+class BookForm(forms.ModelForm):
+
+    class Meta:
+        model = Book
+        fields = ['title', 'author', 'stock', 'barcode']
+
+
+class AuthorForm(forms.ModelForm):
+
+    class Meta:
+        model = Author
+        fields = ['name']
+

@@ -16,7 +16,7 @@ class Book(models.Model):
     title = models.CharField(max_length=264)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
     stock = models.IntegerField(default=0, validators=[MinValueValidator(0)])
-    barcode = models.CharField(max_length=250, unique=True)
+    barcode = models.CharField(max_length=250, unique=True, blank=True, null=True)
     barcode_image = models.ImageField(upload_to='images/barcode/', blank=True, null=True)
 
     @property

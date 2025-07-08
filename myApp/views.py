@@ -8,6 +8,7 @@ from django.conf import settings
 import barcode
 from barcode.writer import ImageWriter
 import os
+import random
 
 from .models import Author, Book, BorrowRecord
 from .forms import BorrowAndReturnForm, BookForm, AuthorForm
@@ -79,6 +80,8 @@ class BookCreateView(generic.CreateView):
     success_url = reverse_lazy('myApp:home')
 
     def form_valid(self, form):
+        if not form.instance.barcode:
+            form.instance.barcode = generate_unique_barcode()
         create_and_assign_barcode(form)
         return super().form_valid(form)
 
@@ -90,13 +93,18 @@ class BookUpdateView(generic.UpdateView):
     success_url = reverse_lazy('myApp:home')
 
     def form_valid(self, form):
+        if not form.instance.barcode:
+            form.instance.barcode = generate_unique_barcode()
         if not form.instance.barcode_image:
             create_and_assign_barcode(form)
         return super().form_valid(form)
 
 
 def create_and_assign_barcode(form):
-    barcode_str = form.cleaned_data['barcode']
+    """
+    Create barcode image and assign it to the book field.
+    """
+    barcode_str = form.instance.barcode
 
     # Generate barcode image
     BarcodeClass = barcode.get_barcode_class('code128')
@@ -110,3 +118,14 @@ def create_and_assign_barcode(form):
 
     # Save image path to model field
     form.instance.barcode_image = f"images/barcode/{file_name}"
+
+
+def generate_unique_barcode(length=12):
+    """
+    If admin didn't add the barcode manually create a random one
+    which is also unique and doesn't exist.
+    """
+    while True:
+        code = ''.join(random.choices('0123456789', k=length))
+        if not Book.objects.filter(barcode=code).exists():
+            return code

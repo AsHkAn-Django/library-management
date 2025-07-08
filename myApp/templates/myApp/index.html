@@ -22,6 +22,9 @@
 
                 </div>
                 <div class="card-footer text-muted text-center">by {{ book.author.name }}</div>
+                <div class="card-footer text-muted text-center">
+                    <img src="{{ book.barcode_image.url }}" alt="{{book.title}} barcode" style="height:80px;">
+                </div>
             </div>
         </div>
         {% endfor %}

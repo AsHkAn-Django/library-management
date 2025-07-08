@@ -47,7 +47,7 @@ class BorrowRecord(models.Model):
 
     class Meta:
         ordering = ['-borrowed_at']
-        unique_together = ('book', 'borrower', 'returned_at')  # optional constraint
+        unique_together = ('book', 'borrower', 'returned_at')  
 
     def return_book(self):
         """Mark the book as returned and increase stock."""

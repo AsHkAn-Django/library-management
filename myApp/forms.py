@@ -1,9 +1,12 @@
 from django import forms
+from django.contrib.auth import get_user_model
+
+
 
 SELECT_CHOICES = [
     ('Borrow', 'Borrow'),
     ('Return', 'Return'),
-    ('Track', 'Track')  
+    ('Track', 'Track')
 ]
 
 class BorrowAndReturnForm(forms.Form):
@@ -13,7 +16,10 @@ class BorrowAndReturnForm(forms.Form):
         label='Barcode',
         widget=forms.TextInput(attrs={'placeholder': 'Scan or enter barcode'})
     )
-    select = forms.ChoiceField(
-        choices=SELECT_CHOICES,
-        label='Action'
+    select = forms.ChoiceField(choices=SELECT_CHOICES, label='Action')
+    user = forms.ModelChoiceField(
+        queryset=get_user_model().objects.all(),
+        required=False,
+        label="Borrower (only for borrow)",
+        widget=forms.Select(attrs={'class': 'form-control'})
     )

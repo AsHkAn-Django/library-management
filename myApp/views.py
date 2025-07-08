@@ -28,24 +28,27 @@ def book_transactions(request):
             messages.warning(request, 'There is no book with the code you entered.')
             return redirect('myApp:transactions')
 
-        record = BorrowRecord.objects.filter(book=book, borrower=request.user).first()
+        record = BorrowRecord.objects.filter(book=book).first()
 
         if select == 'Borrow':
+            if not cd['user']:
+                messages.warning(request, 'Please select a user to borrow the book.')
+                return redirect('myApp:transactions')
             if not record or record.returned_at:
                 if book.borrow():
-                    BorrowRecord.objects.create(book=book, borrower=request.user)
-                    messages.success(request, f'You borrowed the book ({book.title}) successfully.')
+                    BorrowRecord.objects.create(book=book, borrower=cd['user'])
+                    messages.success(request, f'The user ({cd['user']}) borrowed the book ({book.title}) successfully.')
                 else:
                     messages.warning(request, "This book is out of stock.")
             else:
-                messages.warning(request, f'You have already borrowed the book ({book.title}) and you should return it.')
+                messages.warning(request, f'User ({cd['user']}) has already borrowed the book ({book.title}) and should return it.')
 
         elif select == 'Return':
             if record and not record.returned_at:
                 record.return_book()
-                messages.success(request, f'You returned the book ({book.title}) successfully.')
+                messages.success(request, f'The book ({book.title}) has been returned successfully.')
             else:
-                messages.warning(request, f'Your name is not in the system as a borrower for this book ({book.title}).')
+                messages.warning(request, f'This book ({book.title}) is not borrowed to be returned.')
 
         elif select == 'Track':
             if record and not record.returned_at:
@@ -54,7 +57,6 @@ def book_transactions(request):
                 messages.info(request, f'The book ({book.title}) is in the library.')
 
         return redirect('myApp:transactions')
-
     return render(request, 'myApp/transactions.html', {'form': form, 'result': result})
 
 

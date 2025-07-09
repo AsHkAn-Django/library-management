@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.utils import timezone
+from datetime import timedelta
 
 
 
@@ -18,6 +19,7 @@ class Book(models.Model):
     stock = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     barcode = models.CharField(max_length=250, unique=True, blank=True, null=True)
     barcode_image = models.ImageField(upload_to='images/barcode/', blank=True, null=True)
+    daily_rent = models.DecimalField(max_digits=8, decimal_places=2, validators=[MinValueValidator(0)], default=1)
 
     @property
     def is_available(self):
@@ -43,12 +45,31 @@ class Book(models.Model):
 class BorrowRecord(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='borrowed_books')
     borrower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='borrowed_books')
+    rented_days = models.PositiveIntegerField(default=3)
     borrowed_at = models.DateTimeField(auto_now_add=True)
     returned_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['-borrowed_at']
         unique_together = ('book', 'borrower', 'returned_at')
+
+    def total_fee(self):
+        base_fee = self.book.daily_rent * self.rented_days
+        overdue_days = 0
+        overdue_fee = 0
+        if self.is_overdue():
+            due_date = self.due_date()
+            overdue_days = (timezone.now().date() - due_date.date()).days
+            overdue_fee = overdue_days * self.book.daily_rent * 2
+        total = base_fee + overdue_fee
+        return {'base_fee':base_fee, 'overdue_days':overdue_days, 'overdue_fee':overdue_fee, 'total':total}
+
+    def is_overdue(self):
+        """Check if the book return is overdue."""
+        return timezone.now() > self.due_date()
+
+    def due_date(self):
+        return self.borrowed_at + timedelta(days=self.rented_days)
 
     def return_book(self):
         """Mark the book as returned and increase stock."""

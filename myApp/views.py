@@ -17,8 +17,18 @@ from .forms import BorrowAndReturnForm, BookForm, AuthorForm
 
 class IndexView(LoginRequiredMixin, generic.ListView):
     model = Book
-    context_object_name = 'books'
     template_name = "myApp/index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        borrowed_books = Book.objects.filter(borrowed_books__returned_at__isnull=True)
+        # Really interesting that here django is abale to extract ids from a list of objects with id__in!:)
+        available_books = Book.objects.exclude(id__in=borrowed_books)
+
+        context['borrowed_books'] = borrowed_books
+        context['available_books'] = available_books
+        return context
+
 
 
 def book_transactions(request):
@@ -43,7 +53,7 @@ def book_transactions(request):
             if not record or record.returned_at:
                 if book.borrow():
                     BorrowRecord.objects.create(book=book, borrower=cd['user'])
-                    messages.success(request, f'The user ({cd['user']}) borrowed the book ({book.title}) successfully.')
+                    messages.success(request, f"The user ({cd['user']}) borrowed the book ({book.title}) successfully.")
                 else:
                     messages.warning(request, "This book is out of stock.")
             else:

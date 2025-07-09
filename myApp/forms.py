@@ -24,6 +24,8 @@ class BorrowAndReturnForm(forms.Form):
         label="Borrower (only for borrow)",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+    rented_days = forms.IntegerField(min_value=1, required=False, label='Days (only for borrow)',
+                                     widget=forms.TextInput(attrs={'placeholder': 'Ex. 1'}))
 
 
 class BookForm(forms.ModelForm):

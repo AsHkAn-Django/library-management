@@ -2,8 +2,11 @@
 
 {% block content %}
 <div class="container my-5">
-    <h2 class="text-center mb-4">Available Books</h2>
     <div class="row">
+
+        {% if available_books %}
+        <h2 class="text-center mb-4">Available Books</h2>
+
         {% for book in available_books %}
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm">
@@ -24,12 +27,18 @@
             </div>
         </div>
         {% endfor %}
+        {% endif %}
+
+
     </div>
 
     <hr class="my-5">
 
-    <h2 class="text-center mb-4">Currently Borrowed Books</h2>
     <div class="row">
+
+        {% if borrowed_books %}
+        <h2 class="text-center mb-4">Currently Borrowed Books</h2>
+
         {% for book in borrowed_books %}
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm">
@@ -50,6 +59,9 @@
             </div>
         </div>
         {% endfor %}
+        {% endif %}
+
+
     </div>
 </div>
 {% endblock content %}

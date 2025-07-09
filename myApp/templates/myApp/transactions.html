@@ -14,8 +14,12 @@
   </form>
 
 
-  {% if result %}
-    <h2>{{ result }}</h2>
+  {% if return_data %}
+    <p>base_fee: {{return_data.base_fee}}</p>
+    <p>overdue_days: {{return_data.overdue_days}}</p>
+    <p>overdue_fee: {{return_data.overdue_fee}}</p>
+    <p>total: {{return_data.total}}</p>
+
   {% endif %}
 
 </div>

@@ -4,6 +4,7 @@ from django.views import generic
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
+from django.db.models import Exists, OuterRef
 
 import barcode
 from barcode.writer import ImageWriter
@@ -15,15 +16,32 @@ from .forms import BorrowAndReturnForm, BookForm, AuthorForm
 
 
 
-class IndexView(LoginRequiredMixin, generic.ListView):
+class IndexTemplateView(generic.ListView):
     model = Book
     template_name = "myApp/index.html"
+    context_object_name = 'all_books'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        borrowed_books = Book.objects.filter(borrowed_books__returned_at__isnull=True)
-        # Really interesting that here django is abale to extract ids from a list of objects with id__in!:)
-        available_books = Book.objects.exclude(id__in=borrowed_books)
+
+        # borrowed_books = Book.objects.filter(
+        #     Exists(
+        #         BorrowRecord.objects.filter(
+        #             book=OuterRef('pk'),
+        #             returned_at__isnull=True
+        #         )
+        #     )
+        # )
+
+        #----- WE CAN USE THE CODE ABOVE INSTEAD OF THIS ONE WHICH IS MORE DJANGO LIKE------
+        borrowed_records = BorrowRecord.objects.filter(returned_at__isnull=True)
+        borrowed_books = Book.objects.filter(borrowed_books__in=borrowed_records)
+        #---------------------------------------------------------------------------------------------
+
+        # Books that are NOT currently borrowed (either never borrowed or returned)
+        available_books = Book.objects.exclude(
+            id__in=borrowed_books.values_list('id', flat=True)
+        )
 
         context['borrowed_books'] = borrowed_books
         context['available_books'] = available_books
@@ -44,7 +62,7 @@ def book_transactions(request):
             messages.warning(request, 'There is no book with the code you entered.')
             return redirect('myApp:transactions')
 
-        record = BorrowRecord.objects.filter(book=book).first()
+        record = BorrowRecord.objects.filter(book=book).order_by('-borrowed_at').first()
 
         if select == 'Borrow':
             if not cd['user']:
@@ -52,7 +70,10 @@ def book_transactions(request):
                 return redirect('myApp:transactions')
             if not record or record.returned_at:
                 if book.borrow():
-                    BorrowRecord.objects.create(book=book, borrower=cd['user'])
+                    if cd['rented_days']:
+                        BorrowRecord.objects.create(book=book, borrower=cd['user'], rented_days=cd['rented_days'])
+                    else:
+                        BorrowRecord.objects.create(book=book, borrower=cd['user'])
                     messages.success(request, f"The user ({cd['user']}) borrowed the book ({book.title}) successfully.")
                 else:
                     messages.warning(request, "This book is out of stock.")
@@ -63,6 +84,7 @@ def book_transactions(request):
             if record and not record.returned_at:
                 record.return_book()
                 messages.success(request, f'The book ({book.title}) has been returned successfully.')
+                return redirect('myApp:return-summary', pk=record.pk)
             else:
                 messages.warning(request, f'This book ({book.title}) is not borrowed to be returned.')
 
@@ -74,6 +96,13 @@ def book_transactions(request):
 
         return redirect('myApp:transactions')
     return render(request, 'myApp/transactions.html', {'form': form, 'result': result})
+
+
+def return_summary(request, pk):
+    record = get_object_or_404(BorrowRecord, pk=pk)
+    fee_data = record.total_fee()
+    return render(request, 'myApp/return_summary.html', {'record': record, 'fee_data': fee_data})
+
 
 
 class AuthorCreateView(generic.CreateView):

@@ -2,9 +2,11 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import generic
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.conf import settings
 from django.db.models import Exists, OuterRef
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 
 import barcode
 from barcode.writer import ImageWriter
@@ -48,7 +50,8 @@ class IndexTemplateView(generic.ListView):
         return context
 
 
-
+@staff_member_required
+@login_required
 def book_transactions(request):
     result = None
     form = BorrowAndReturnForm(request.POST or None)
@@ -98,6 +101,8 @@ def book_transactions(request):
     return render(request, 'myApp/transactions.html', {'form': form, 'result': result})
 
 
+@staff_member_required
+@login_required
 def return_summary(request, pk):
     record = get_object_or_404(BorrowRecord, pk=pk)
     fee_data = record.total_fee()
@@ -105,18 +110,24 @@ def return_summary(request, pk):
 
 
 
-class AuthorCreateView(generic.CreateView):
+class AuthorCreateView(UserPassesTestMixin, LoginRequiredMixin, generic.CreateView):
     model = Author
     form_class = AuthorForm
     template_name = "myApp/add_author.html"
     success_url = reverse_lazy('myApp:add-book')
 
+    def test_func(self):
+        return self.request.user.is_staff
 
-class BookCreateView(generic.CreateView):
+
+class BookCreateView(UserPassesTestMixin, LoginRequiredMixin, generic.CreateView):
     model = Book
     form_class = BookForm
     template_name = "myApp/add_book.html"
     success_url = reverse_lazy('myApp:home')
+
+    def test_func(self):
+        return self.request.user.is_staff
 
     def form_valid(self, form):
         if not form.instance.barcode:
@@ -125,11 +136,14 @@ class BookCreateView(generic.CreateView):
         return super().form_valid(form)
 
 
-class BookUpdateView(generic.UpdateView):
+class BookUpdateView(UserPassesTestMixin, LoginRequiredMixin, generic.UpdateView):
     model = Book
     form_class = BookForm
     template_name = "myApp/edit_book.html"
     success_url = reverse_lazy('myApp:home')
+
+    def test_func(self):
+        return self.request.user.is_staff
 
     def form_valid(self, form):
         if not form.instance.barcode:
@@ -168,3 +182,35 @@ def generate_unique_barcode(length=12):
         code = ''.join(random.choices('0123456789', k=length))
         if not Book.objects.filter(barcode=code).exists():
             return code
+
+
+@staff_member_required
+@login_required
+def inventory_dashboard(request):
+    books = Book.objects.all()
+    return render(request, 'myApp/inventory_dashboard.html', {'books': books})
+
+
+@staff_member_required
+@login_required
+def update_stock(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'increase':
+            book.stock += 1
+            book.save()
+            messages.success(request, f'Stock for "{book.title}" increased.')
+        elif action == 'decrease':
+            if book.stock > 0:
+                book.stock -= 1
+                book.save()
+                messages.success(request, f'Stock for "{book.title}" decreased.')
+            else:
+                messages.warning(request, f'Stock for "{book.title}" cannot go below zero.')
+        else:
+            messages.error(request, 'Invalid action.')
+
+    return redirect('myApp:inventory-dashboard')

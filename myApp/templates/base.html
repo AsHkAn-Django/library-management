@@ -26,13 +26,16 @@
                                 <a class="nav-link" href="{% url 'myApp:transactions' %}">Transactions</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" href="{% url 'myApp:inventory-dashboard' %}">Inventory Dashboard</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="{% url 'myApp:add-book' %}">Add Book</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'myApp:add-author' %}">Add Author</a>
                             </li>
                         {% endif %}
-                        
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {{ user.username }}
@@ -69,6 +72,7 @@
         {% block content %}
         {% endblock content %}
     </div>
+
 
     {% bootstrap_javascript %}
 </body>

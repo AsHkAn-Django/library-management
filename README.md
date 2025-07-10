@@ -73,4 +73,65 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-### Tutorial
+### Tutorial Deploying an app on railway with postgres
+1. create a project and an app and a postgres inside of railway website
+2. create a requirements.txt
+```txt
+Django==5.2.4
+gunicorn==23.0.0
+whitenoise==6.6.0
+dj-database-url==3.0.1
+django-decouple==2.1
+psycopg2==2.9.10
+```
+
+3. in settings
+```python
+import dj_database_url
+
+CSRF_TRUSTED_ORIGINS = [config('WEB_URL')]
+
+
+DATABASES = {
+    'default': dj_database_url.config(default=config('DATABASE_URL'))
+}
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+```
+
+4. in ```.env```
+```txt
+DEBUG=False
+ALLOWED_HOSTS=.onrender.com,127.0.0.1,localhost,library-management1.up.railway.app
+SECRET_KEY=
+WEB_URL=https://library-management1.up.railway.appclear
+DATABASE_URL=<becareful you should use the public one here for local and the main one for internal>
+```
+
+5. create a ```runtime.txt``` file
+```text
+python-3.11
+```
+
+6. create a ```Procfile``` file
+```
+web: gunicorn library_management.wsgi --bind 0.0.0.0:8080
+```
+
+7. create a ```railway.json``` file
+```json
+{
+  "build": {
+    "builder": "nixpacks"
+  },
+  "start": {
+    "cmd": "gunicorn library_management.wsgi --bind 0.0.0.0:$PORT"
+  }
+}
+```
+
+8. add it to github and push it and deploy

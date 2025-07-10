@@ -5,7 +5,7 @@ TODOLIST.md
 *.Zone.Identifier
 *:.Zone.Identifier
 dump.rdb
-
+data.json
 
 
 # Byte-compiled / optimized / DLL files

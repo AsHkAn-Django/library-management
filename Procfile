@@ -1,1 +1,1 @@
-web: gunicorn library_management.wsgi --log-file -
+gunicorn library_management.wsgi --bind 0.0.0.0:8080

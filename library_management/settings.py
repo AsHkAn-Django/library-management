@@ -30,6 +30,7 @@ DEBUG = config('DEBUG')
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')
 
+CSRF_TRUSTED_ORIGINS = config('WEB_URL')
 
 # Application definition
 

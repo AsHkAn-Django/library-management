@@ -5,17 +5,17 @@
 <div class="container my-5">
   <h2>Enter the book code and choose the action:</h2>
 
-  <!-- Start camera button -->
+  <!-- camera button -->
   <button id="start-scan-btn" class="btn btn-success mb-3">📷 Start Camera</button>
 
-  <!-- Small scanner box placed between button and form -->
+  <!-- scanner box -->
   <div class="d-flex justify-content-start mb-3">
     <div id="scanner-container" style="display: none; width: 100px; height: 100px; border: 1px solid #ccc;">
       <div id="scanner" style="width: 100%; height: 100%;"></div>
     </div>
   </div>
 
-  <!-- Form -->
+
   <form id="transaction-form" action="" method="post">
     {% csrf_token %}
     {% bootstrap_form form %}

@@ -1,0 +1,16 @@
+#scanner-container {
+  width: 100px !important;
+  height: 100px !important;
+  border: 1px solid #ccc;
+  overflow: hidden;
+  position: relative;
+}
+
+#scanner video {
+  width: 100px !important;
+  height: 100px !important;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}

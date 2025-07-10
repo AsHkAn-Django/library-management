@@ -2,59 +2,80 @@
 {% load django_bootstrap5 %}
 
 {% block content %}
-
 <div class="container my-5">
-
   <h2>Enter the book code and choose the action:</h2>
+
+  <!-- Start camera button -->
   <button id="start-scan-btn" class="btn btn-success mb-3">📷 Start Camera</button>
+
+  <!-- Small scanner box placed between button and form -->
+  <div class="d-flex justify-content-start mb-3">
+    <div id="scanner-container" style="display: none; width: 100px; height: 100px; border: 1px solid #ccc;">
+      <div id="scanner" style="width: 100%; height: 100%;"></div>
+    </div>
+  </div>
+
+  <!-- Form -->
   <form id="transaction-form" action="" method="post">
     {% csrf_token %}
     {% bootstrap_form form %}
     <button type="submit" class="btn btn-outline-primary">Go</button>
   </form>
 
-  <hr class="my-4">
-
-  <div class="container my-5">
-    <div id="scanner-container" style="display: none; width:100%; max-width:500px; height:300px; border:1px solid #ccc;">
-      <div id="scanner" style="width:100%; height:100%;"></div>
-    </div>
+  <!-- Scanned result -->
+  <div class="mt-4">
+    <strong>Scanned Code:</strong>
+    <span id="barcode-result">None</span>
   </div>
-
 </div>
 
+<!-- QuaggaJS -->
 <script src="https://unpkg.com/@ericblade/quagga2@v0.0.10/dist/quagga.min.js"></script>
 <script>
-  let quaggaStarted = false;
+  const startBtn = document.getElementById('start-scan-btn');
+  const container = document.getElementById('scanner-container');
+  const scanner = document.getElementById('scanner');
+  const codeInput = document.querySelector('input[name="code"]');
+  const resultSpan = document.getElementById('barcode-result');
 
-  document.getElementById('start-scan-btn').addEventListener('click', function() {
-    const container = document.getElementById('scanner-container');
+  startBtn.addEventListener('click', () => {
+    // Reset previous scan
+    if (codeInput) codeInput.value = '';
+    if (resultSpan) resultSpan.textContent = 'None';
+
     container.style.display = 'block';
-    if (!quaggaStarted) {
-      quaggaStarted = true;
-      Quagga.init({
-        inputStream: {
-          type: "LiveStream",
-          target: document.getElementById('scanner'),
-          constraints: { facingMode: "environment" }
-        },
-        decoder: { readers: ["code_128_reader"] }
-      }, function(err) {
-        if (err) { console.error(err); return; }
-        Quagga.start();
-      });
 
-      Quagga.onDetected(function(result) {
-        const code = result.codeResult.code;
-        document.getElementById("barcode-result").textContent = code;
-        // paste into the 'code' input of the form
-        const codeInput = document.querySelector('input[name="code"]');
-        if (codeInput) { codeInput.value = code; }
-        Quagga.stop();
-        container.style.display = 'none';
-      });
+    if (Quagga && Quagga.state === 'started') {
+      Quagga.stop();
     }
+
+    Quagga.init({
+      inputStream: {
+        type: "LiveStream",
+        target: scanner,
+        constraints: { facingMode: "environment" }
+      },
+      decoder: {
+        readers: ["code_128_reader", "ean_reader", "ean_8_reader", "upc_reader"]
+      },
+      locate: true
+    }, err => {
+      if (err) {
+        console.error("Quagga init failed:", err);
+        return;
+      }
+      Quagga.start();
+    });
+
+    Quagga.offDetected();
+    Quagga.onDetected(result => {
+      const code = result.codeResult.code;
+      if (codeInput) codeInput.value = code;
+      if (resultSpan) resultSpan.textContent = code;
+
+      Quagga.stop();
+      container.style.display = 'none';
+    });
   });
 </script>
-
 {% endblock content %}

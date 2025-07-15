@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',  # new
     'django.contrib.staticfiles',
 
     'django_bootstrap5',
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # new
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -126,6 +128,8 @@ LOGOUT_REDIRECT_URL = 'myApp:home'
 
 # === Cloudflare R2 via STORAGES setting (path‐style addressing) ===
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 # 1) Pull credentials & bucket from env
 R2_BUCKET   = config("R2_BUCKET_NAME")
 R2_ENDPOINT = config("R2_ENDPOINT_URL").rstrip("/")  # e.g. https://<ACCOUNT_ID>.r2.cloudflarestorage.com
@@ -150,14 +154,12 @@ STORAGES = {
         "LOCATION": "media",     # objects under /media/
     },
     "staticfiles": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": R2_OPTIONS,
-        "LOCATION": "static",    # objects under /static/
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 
 # 4) URLs your templates will use
-STATIC_URL = f"https://{R2_ENDPOINT.replace('https://','')}/{R2_BUCKET}/static/"
+STATIC_URL = "/static/"
 MEDIA_URL  = f"https://{R2_ENDPOINT.replace('https://','')}/{R2_BUCKET}/media/"
 
 # 5) A dummy STATIC_ROOT so collectstatic won’t crash

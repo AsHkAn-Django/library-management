@@ -164,3 +164,4 @@ MEDIA_URL  = f"https://{R2_ENDPOINT.replace('https://','')}/{R2_BUCKET}/media/"
 
 # 5) A dummy STATIC_ROOT so collectstatic won’t crash
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]  # Only needed if you have /static outside apps

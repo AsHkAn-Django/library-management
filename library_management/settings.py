@@ -11,12 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 import dj_database_url
-from environs import Env
-
-
-env = Env()
-env.read_env()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,14 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=False)
+DEBUG = config('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS').split(',')
 
-CSRF_TRUSTED_ORIGINS = [env.str('WEB_URL')]
+CSRF_TRUSTED_ORIGINS = [config('WEB_URL')]
 
 # Application definition
 
@@ -47,7 +43,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_bootstrap5',
-    'storages',
 
     'myApp',
     'registration',
@@ -85,12 +80,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'library_management.wsgi.application'
 
 
+
 DATABASES = {
-    "default": dj_database_url.config(
-        default=dj_database_url.parse(env.str("DATABASE_URL")),
-        conn_max_age=600,
-        ssl_require=True,
-    )
+    'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
 
 # Password validation
@@ -126,20 +118,22 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+
 LOGIN_REDIRECT_URL = 'myApp:home'
 LOGOUT_REDIRECT_URL = 'myApp:home'
 
 
 
+# === Cloudflare R2 via STORAGES setting (path‐style addressing) ===
 
 # 1) Pull credentials & bucket from env
-R2_BUCKET   = env.str("R2_BUCKET_NAME")
-R2_ENDPOINT = env.str("R2_ENDPOINT_URL").rstrip("/")  # e.g. https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+R2_BUCKET   = config("R2_BUCKET_NAME")
+R2_ENDPOINT = config("R2_ENDPOINT_URL").rstrip("/")  # e.g. https://<ACCOUNT_ID>.r2.cloudflarestorage.com
 
 # 2) Common OPTIONS for both storage backends
 R2_OPTIONS = {
-    "access_key": env.str("R2_ACCESS_KEY_ID"),
-    "secret_key": env.str("R2_SECRET_ACCESS_KEY"),
+    "access_key": config("R2_ACCESS_KEY_ID"),
+    "secret_key": config("R2_SECRET_ACCESS_KEY"),
     "bucket_name": R2_BUCKET,
     "endpoint_url": R2_ENDPOINT,
     "region_name": "auto",

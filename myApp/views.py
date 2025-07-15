@@ -4,14 +4,15 @@ from django.views import generic
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.conf import settings
-from django.db.models import Exists, OuterRef
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
+from django.core.files.base import ContentFile
 
 import barcode
 from barcode.writer import ImageWriter
 import os
 import random
+from io import BytesIO
 
 from .models import Author, Book, BorrowRecord
 from .forms import BorrowAndReturnForm, BookForm, AuthorForm
@@ -158,19 +159,20 @@ def create_and_assign_barcode(form):
     Create barcode image and assign it to the book field.
     """
     barcode_str = form.instance.barcode
-
-    # Generate barcode image
     BarcodeClass = barcode.get_barcode_class('code128')
     ean = BarcodeClass(barcode_str, writer=ImageWriter())
 
-    # Save to media path
-    file_name = f"{barcode_str}.png"
-    file_path = os.path.join(settings.MEDIA_ROOT, 'images', 'barcode', file_name)
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    ean.save(file_path[:-4]) # remove ".png" - save() adds it
+    # Save barcode image to memory buffer
+    buffer = BytesIO()
+    ean.write(buffer)
+    buffer.seek(0)
 
-    # Save image path to model field
-    form.instance.barcode_image = f"images/barcode/{file_name}"
+    # Create Django-friendly file object
+    file_name = f"{barcode_str}.png"
+    django_file = ContentFile(buffer.read(), name=file_name)
+
+    # Save to the ImageField using Django's storage backend (Cloudflare R2)
+    form.instance.barcode_image.save(file_name, django_file, save=False)
 
 
 def generate_unique_barcode(length=12):

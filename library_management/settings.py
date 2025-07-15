@@ -127,6 +127,8 @@ LOGIN_REDIRECT_URL = 'myApp:home'
 LOGOUT_REDIRECT_URL = 'myApp:home'
 
 
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
 # === Cloudflare R2 via STORAGES setting (path‐style addressing) ===
 
 # 1) Pull credentials & bucket from env

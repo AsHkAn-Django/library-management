@@ -22,7 +22,11 @@
                     {% endif %}
                 </div>
                 <div class="card-footer text-center">
-                    <img src="{{ book.barcode_image.url }}" alt="{{ book.title }} barcode" style="height:80px;">
+                {% if book.barcode_image %}
+                <img src="{{ book.barcode_image.url }}" alt="{{ book.title }} barcode" style="height:80px;">
+                {% else %}
+                <p>No barcode yet.</p>
+                {% endif %}
                 </div>
             </div>
         </div>
@@ -54,7 +58,11 @@
                     {% endif %}
                 </div>
                 <div class="card-footer text-center">
-                    <img src="{{ book.barcode_image.url }}" alt="{{ book.title }} barcode" style="height:80px;">
+                {% if book.barcode_image %}
+                <img src="{{ book.barcode_image.url }}" alt="{{ book.title }} barcode" style="height:80px;">
+                {% else %}
+                <p>No barcode yet.</p>
+                {% endif %}
                 </div>
             </div>
         </div>

@@ -1,6 +1,77 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="container p-5 my-5 rounded-4 shadow-lg" style="background-color: #f1f3f5;">
+  <div class="row align-items-center">
+
+    <!-- Left: Description & Call-to-Action -->
+    <div class="col-md-6 mb-4 mb-md-0">
+      <h1 class="display-5 fw-bold text-dark">Smart Library System</h1>
+      <p class="fs-5 text-secondary">Manage library operations with barcode-enabled checkouts, efficient returns, and real-time inventory tracking.</p>
+      <a href="{% url 'myApp:transactions' %}" class="btn btn-primary btn-lg mt-3">Track Books</a>
+    </div>
+
+    <!-- Right: Key Features -->
+    <div class="col-md-6">
+      <h4 class="fw-semibold mb-3 text-dark">Key Features</h4>
+      <div class="row g-2">
+
+        <div class="col-12">
+          <div class="p-2 bg-white rounded-3 shadow-sm d-flex align-items-start gap-2">
+            <span class="badge bg-primary rounded-pill small">1</span>
+            <div>
+              <h6 class="mb-0 fw-semibold text-dark small">Barcode Integration</h6>
+              <p class="mb-0 text-muted small">Each book is tagged with a barcode for fast scanning and identification.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="p-2 bg-white rounded-3 shadow-sm d-flex align-items-start gap-2">
+            <span class="badge bg-primary rounded-pill small">2</span>
+            <div>
+              <h6 class="mb-0 fw-semibold text-dark small">Borrow & Return System</h6>
+              <p class="mb-0 text-muted small">Manage checkouts, returns, and due dates with automated tracking.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="p-2 bg-white rounded-3 shadow-sm d-flex align-items-start gap-2">
+            <span class="badge bg-primary rounded-pill small">3</span>
+            <div>
+              <h6 class="mb-0 fw-semibold text-dark small">Late Fee Calculation</h6>
+              <p class="mb-0 text-muted small">Automatically calculate and apply overdue charges based on return delays.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="p-2 bg-white rounded-3 shadow-sm d-flex align-items-start gap-2">
+            <span class="badge bg-primary rounded-pill small">4</span>
+            <div>
+              <h6 class="mb-0 fw-semibold text-dark small">Inventory Management</h6>
+              <p class="mb-0 text-muted small">Real-time stock overview and librarian tools to manage book entries.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="p-2 bg-white rounded-3 shadow-sm d-flex align-items-start gap-2">
+            <span class="badge bg-primary rounded-pill small">5</span>
+            <div>
+              <h6 class="mb-0 fw-semibold text-dark small">Mobile-Friendly Interface</h6>
+              <p class="mb-0 text-muted small">Optimized for mobile cameras for on-the-go barcode scanning.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <div class="container my-5">
     <div class="row">
 

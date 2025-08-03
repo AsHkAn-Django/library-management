@@ -10,12 +10,13 @@ gunicorn==23.0.0
 MarkupSafe==3.0.2
 packaging==25.0
 pillow==11.3.0
-psycopg2==2.9.10
+psycopg2-binary==2.9.10
 pycparser==2.22
 pyngrok==7.2.12
 pyOpenSSL==25.1.0
 python-barcode==0.15.1
 PyYAML==6.0.2
 sqlparse==0.5.3
+typing_extensions==4.14.1
 tzdata==2025.2
 Werkzeug==3.1.3

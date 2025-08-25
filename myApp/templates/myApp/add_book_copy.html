@@ -7,18 +7,19 @@
 
   <h2>Add a Copy book</h2>
 
-  <form action="" method="post">
-    {% csrf_token %}
-    {{ formset.management_form}}
-
-
-    {% for form in formset %}
-      {% bootstrap_form form %}
-      <hr>
-    {% endfor %}
-
-    <button type="submit" class="btn btn-outline-primary">Add</button>
-  </form>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ formset.management_form }}
+  {% for form in formset %}
+    <div class="form-row">
+      {% bootstrap_field form.book %}
+      {% bootstrap_field form.barcode %}
+      {% bootstrap_field form.barcode_image %}
+    </div>
+    <hr class="my-4">
+  {% endfor %}
+  <button type="submit" class="btn btn-primary">Save</button>
+</form>
 
 </div>
 

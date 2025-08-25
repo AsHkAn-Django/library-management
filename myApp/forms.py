@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import inlineformset_factory, BaseFormSet, ValidationError
+from django.forms import modelformset_factory, BaseFormSet, ValidationError
 from django.contrib.auth import get_user_model
 
 from .models import Book, Author, BookCopy
@@ -57,19 +57,16 @@ class BookForm(forms.ModelForm):
 
 
 class BookCopyForm(forms.ModelForm):
-
     class Meta:
         model = BookCopy
         fields = ['book', 'barcode', 'barcode_image']
 
 
-BookCopyFormSet = inlineformset_factory(
-    Book,
+BookCopyFormSet = modelformset_factory(
     BookCopy,
     form=BookCopyForm,
-    extra=1,
+    extra=3,
     can_delete=True
-
 )
 
 

@@ -98,48 +98,41 @@ class BookCreateView(UserPassesTestMixin, LoginRequiredMixin, generic.CreateView
     model = Book
     form_class = BookForm
     template_name = "myApp/add_book.html"
-    success_url = reverse_lazy('myApp:add_book_copy')
+    success_url = reverse_lazy('myApp:add_copy_book')
 
     def test_func(self):
         return self.request.user.is_staff
 
 
-class BookCopyCreateView(UserPassesTestMixin, LoginRequiredMixin,generic.View):
+class BookCopyCreateView(UserPassesTestMixin, LoginRequiredMixin, generic.View):
     template_name = "myApp/add_book_copy.html"
     success_url = reverse_lazy('myApp:home')
 
     def test_func(self):
         return self.request.user.is_staff
-    
+
     def get(self, request, *args, **kwargs):
         formset = BookCopyFormSet(queryset=BookCopy.objects.none())
         return render(request, self.template_name, {"formset": formset})
 
     def post(self, request, *args, **kwargs):
-        formset = BookCopyFormSet(request.POST, request.FILES, queryset=BookCopy.objects.none())
+        formset = BookCopyFormSet(request.POST, request.FILES)
         if formset.is_valid():
-            has_data = False
             for form in formset:
-                if form.cleaned_data and not form.cleaned_data.get("DELETE", False):
-                    has_data = True
+                if form.cleaned_data:
                     book_copy = form.save(commit=False)
                     if not book_copy.barcode:
                         book_copy.barcode = generate_unique_barcode()
                         if not book_copy.barcode_image:
-                            create_and_assign_barcode(form)
+                            create_and_assign_barcode(book_copy)
                     book_copy.save()
-            if not has_data:
-                formset.non_form_errors = lambda: ["You must fill at least one copybook."]
-                return render(request, self.template_name, {"formset": formset})
-
             return redirect(self.success_url)
-
         return render(request, self.template_name, {"formset": formset})
 
 
-
+# TODO: IT SHOULD GET FIXED ESPECIALLY THE FORM HANDLING
 class BookUpdateView(UserPassesTestMixin, LoginRequiredMixin, generic.UpdateView):
-    model = BookCopy
+    model = Book
     form_class = BookForm
     template_name = "myApp/edit_book.html"
     success_url = reverse_lazy('myApp:home')
@@ -147,19 +140,13 @@ class BookUpdateView(UserPassesTestMixin, LoginRequiredMixin, generic.UpdateView
     def test_func(self):
         return self.request.user.is_staff
 
-    def form_valid(self, form):
-        if not form.instance.barcode:
-            form.instance.barcode = generate_unique_barcode()
-        if not form.instance.barcode_image:
-            create_and_assign_barcode(form)
-        return super().form_valid(form)
 
 
-def create_and_assign_barcode(form):
+def create_and_assign_barcode(book):
     """
     Create barcode image and assign it to the book field.
     """
-    barcode_str = form.instance.barcode
+    barcode_str = book.barcode
     BarcodeClass = barcode.get_barcode_class('code128')
     ean = BarcodeClass(barcode_str, writer=ImageWriter())
 
@@ -173,7 +160,7 @@ def create_and_assign_barcode(form):
     django_file = ContentFile(buffer.read(), name=file_name)
 
     # Save to the ImageField using Django's storage backend (Cloudflare R2)
-    form.instance.barcode_image.save(file_name, django_file, save=False)
+    book.barcode_image.save(file_name, django_file, save=False)
 
 
 def generate_unique_barcode(length=12):

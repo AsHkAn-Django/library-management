@@ -37,7 +37,7 @@ class Book(models.Model):
         return self.copies.filter(is_available=True).count()
 
     def __str__(self):
-        return f'{self.title} by {self.author.name}'
+        return f'{self.title} by {self.author.name} ({self.copies.count()} copies)'
 
 
 class BookCopy(models.Model):
@@ -48,7 +48,9 @@ class BookCopy(models.Model):
     )
     barcode = models.CharField(
         max_length=250,
-        unique=True
+        unique=True,
+        blank=True,
+        null=True
     )
     barcode_image = models.ImageField(
         upload_to='images/barcodes/',

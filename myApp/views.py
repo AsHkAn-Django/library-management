@@ -14,13 +14,13 @@ import os
 import random
 from io import BytesIO
 
-from .models import Author, Book, BorrowRecord
+from .models import Author, BookCopy, BorrowRecord
 from .forms import BorrowAndReturnForm, BookForm, AuthorForm
 
 
 
 class IndexTemplateView(generic.ListView):
-    model = Book
+    model = BookCopy
     template_name = "myApp/index.html"
     context_object_name = 'all_books'
 
@@ -38,11 +38,11 @@ class IndexTemplateView(generic.ListView):
 
         #----- WE CAN USE THE CODE ABOVE INSTEAD OF THIS ONE WHICH IS MORE DJANGO LIKE------
         borrowed_records = BorrowRecord.objects.filter(returned_at__isnull=True)
-        borrowed_books = Book.objects.filter(borrowed_books__in=borrowed_records)
+        borrowed_books = BookCopy.objects.filter(borrowed_books__in=borrowed_records)
         #---------------------------------------------------------------------------------------------
 
         # Books that are NOT currently borrowed (either never borrowed or returned)
-        available_books = Book.objects.exclude(
+        available_books = BookCopy.objects.exclude(
             id__in=borrowed_books.values_list('id', flat=True)
         )
 
@@ -61,7 +61,7 @@ def book_transactions(request):
         barcode=cd['code']
         select=cd['select']
 
-        book = Book.objects.filter(barcode=barcode).first()
+        book = BookCopy.objects.filter(barcode=barcode).first()
         if not book:
             messages.warning(request, "There is no book with the code you entered.")
             return redirect('myApp:transactions')
@@ -106,7 +106,7 @@ def book_transactions(request):
 @login_required
 def return_summary(request, pk):
     record = get_object_or_404(BorrowRecord, pk=pk)
-    fee_data = record.total_fee()
+    fee_data = record.get_total_fee()
     return render(request, 'myApp/return_summary.html', {'record': record, 'fee_data': fee_data})
 
 
@@ -122,7 +122,7 @@ class AuthorCreateView(UserPassesTestMixin, LoginRequiredMixin, generic.CreateVi
 
 
 class BookCreateView(UserPassesTestMixin, LoginRequiredMixin, generic.CreateView):
-    model = Book
+    model = BookCopy
     form_class = BookForm
     template_name = "myApp/add_book.html"
     success_url = reverse_lazy('myApp:home')
@@ -138,7 +138,7 @@ class BookCreateView(UserPassesTestMixin, LoginRequiredMixin, generic.CreateView
 
 
 class BookUpdateView(UserPassesTestMixin, LoginRequiredMixin, generic.UpdateView):
-    model = Book
+    model = BookCopy
     form_class = BookForm
     template_name = "myApp/edit_book.html"
     success_url = reverse_lazy('myApp:home')
@@ -182,21 +182,21 @@ def generate_unique_barcode(length=12):
     """
     while True:
         code = ''.join(random.choices('0123456789', k=length))
-        if not Book.objects.filter(barcode=code).exists():
+        if not BookCopy.objects.filter(barcode=code).exists():
             return code
 
 
 @staff_member_required
 @login_required
 def inventory_dashboard(request):
-    books = Book.objects.all()
+    books = BookCopy.objects.all()
     return render(request, 'myApp/inventory_dashboard.html', {'books': books})
 
 
 @staff_member_required
 @login_required
 def update_stock(request, pk):
-    book = get_object_or_404(Book, pk=pk)
+    book = get_object_or_404(BookCopy, pk=pk)
 
     if request.method == 'POST':
         action = request.POST.get('action')

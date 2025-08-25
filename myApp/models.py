@@ -15,54 +15,105 @@ class Author(models.Model):
 
 class Book(models.Model):
     title = models.CharField(max_length=264)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='books')
-    stock = models.IntegerField(default=0, validators=[MinValueValidator(0)])
-    barcode = models.CharField(max_length=250, unique=True, blank=True, null=True)
-    barcode_image = models.ImageField(upload_to='images/barcode/', blank=True, null=True)
-    daily_rent = models.DecimalField(max_digits=8, decimal_places=2, validators=[MinValueValidator(0)], default=1)
+    author = models.ForeignKey(
+        Author,
+        on_delete=models.CASCADE,
+        related_name='books'
+    )
+    image = models.ImageField(
+        upload_to='images/books/',
+        blank=True, null=True
+    )
+    daily_rent = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        default=1
+    )
 
     @property
-    def is_available(self):
-        return self.stock > 0
-
-    def borrow(self):
-        """Decrease stock when book is borrowed."""
-        if self.stock > 0:
-            self.stock -= 1
-            self.save()
-            return True
-        return False
-
-    def return_copy(self):
-        """Increase stock when book is returned."""
-        self.stock += 1
-        self.save()
+    def stock(self):
+        """Number of available copies."""
+        return self.copies.filter(is_available=True).count()
 
     def __str__(self):
-        return f'{self.title} by {self.author.name} (Stock: {self.stock})'
+        return f'{self.title} by {self.author.name}'
 
+
+class BookCopy(models.Model):
+    book = models.ForeignKey(
+        Book,
+        on_delete=models.CASCADE,
+        related_name='copies'
+    )
+    barcode = models.CharField(
+        max_length=250,
+        unique=True
+    )
+    barcode_image = models.ImageField(
+        upload_to='images/barcodes/',
+        blank=True,
+        null=True
+    )
+    is_available = models.BooleanField(default=True)
+
+    def __str__(self):
+        status = "Available" if self.is_available else "Borrowed"
+        return f"Copy of {self.book.title} ({status})"
 
 class BorrowRecord(models.Model):
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='borrowed_books')
-    borrower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='borrowed_books')
+    book_copy = models.ForeignKey(
+        BookCopy,
+        on_delete=models.CASCADE,
+        related_name='borrow_records'
+    )
+    borrower = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='borrowed_books'
+    )
     rented_days = models.PositiveIntegerField(default=3)
     borrowed_at = models.DateTimeField(auto_now_add=True)
     returned_at = models.DateTimeField(null=True, blank=True)
+    total_fee = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=0
+    )
 
     class Meta:
         ordering = ['-borrowed_at']
-        unique_together = ('book', 'borrower', 'returned_at')
+        unique_together = ('book_copy', 'borrower', 'returned_at')
 
-    def total_fee(self):
-        base_fee = self.book.daily_rent * self.rented_days
+    def get_total_fee(self):
+        data = self.get_total_debt_till_now()
+        self.total_fee = data['total']
+        self.save()
+        return data
+
+    def get_total_debt_till_now(self):
+        """Bring the debt of user till now."""
+        base_fee = self.book_copy.book.daily_rent * self.rented_days
+
         overdue_days = 0
         overdue_fee = 0
+
         if self.is_overdue():
             due_date = self.due_date()
             overdue_days = (timezone.now().date() - due_date.date()).days
-            overdue_fee = overdue_days * self.book.daily_rent * 2
+            overdue_fee = overdue_days * self.book_copy.book.daily_rent * 2
+
         total = base_fee + overdue_fee
-        return {'base_fee':base_fee, 'overdue_days':overdue_days, 'overdue_fee':overdue_fee, 'total':total}
+        return {
+            'base_fee': base_fee,
+            'overdue_days': overdue_days,
+            'overdue_fee': overdue_fee,
+            'total': total,
+        }
+
+    def get_days_borrowed(self):
+        """Bring the time the book has been with the user till now."""
+        return (timezone.now().date() - self.borrowed_at.date()).days
 
     def is_overdue(self):
         """Check if the book return is overdue."""
@@ -72,12 +123,13 @@ class BorrowRecord(models.Model):
         return self.borrowed_at + timedelta(days=self.rented_days)
 
     def return_book(self):
-        """Mark the book as returned and increase stock."""
+        """Mark the book as returned and free the copy."""
         if not self.returned_at:
             self.returned_at = timezone.now()
-            self.book.return_copy()
+            self.book_copy.is_available = True
+            self.book_copy.save()
             self.save()
 
     def __str__(self):
         status = "Returned" if self.returned_at else "Not Returned"
-        return f"{self.borrower.username} - {self.book.title} ({status})"
+        return f"{self.borrower.username} - {self.book_copy.book.title} ({status})"

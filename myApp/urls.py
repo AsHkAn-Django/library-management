@@ -11,7 +11,8 @@ urlpatterns = [
     path('update-stock/<int:pk>/', views.update_stock, name='update-stock'),
     path('dashboard-management/', views.inventory_dashboard, name='inventory-dashboard'),
     path('transactions/', views.book_transactions, name='transactions'),
-    path('add_book/', views.BookCreateView.as_view(), name='add-book'),
-    path('add_author/', views.AuthorCreateView.as_view(), name='add-author'),
+    path('add-copy-book/', views.BookCopyCreateView.as_view(), name='add_copy_book'),
+    path('add-book/', views.BookCreateView.as_view(), name='add-book'),
+    path('add-author/', views.AuthorCreateView.as_view(), name='add-author'),
     path('', views.IndexTemplateView.as_view(), name='home'),
 ]

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+
+<div class="container my-5">
+
+  <h2>Add a Copy book</h2>
+
+  <form action="" method="post">
+    {% csrf_token %}
+    {{ formset.management_form}}
+
+
+    {% for form in formset %}
+      {% bootstrap_form form %}
+      <hr>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-outline-primary">Add</button>
+  </form>
+
+</div>
+
+{% endblock content %}

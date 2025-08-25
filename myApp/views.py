@@ -10,45 +10,18 @@ from django.core.files.base import ContentFile
 
 import barcode
 from barcode.writer import ImageWriter
-import os
 import random
 from io import BytesIO
 
-from .models import Author, BookCopy, BorrowRecord
-from .forms import BorrowAndReturnForm, BookForm, AuthorForm
+from .models import Author, BookCopy, BorrowRecord, Book
+from .forms import BorrowAndReturnForm, BookForm, AuthorForm, BookCopyFormSet
 
 
 
 class IndexTemplateView(generic.ListView):
-    model = BookCopy
+    model = Book
     template_name = "myApp/index.html"
     context_object_name = 'all_books'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # borrowed_books = Book.objects.filter(
-        #     Exists(
-        #         BorrowRecord.objects.filter(
-        #             book=OuterRef('pk'),
-        #             returned_at__isnull=True
-        #         )
-        #     )
-        # )
-
-        #----- WE CAN USE THE CODE ABOVE INSTEAD OF THIS ONE WHICH IS MORE DJANGO LIKE------
-        borrowed_records = BorrowRecord.objects.filter(returned_at__isnull=True)
-        borrowed_books = BookCopy.objects.filter(borrowed_books__in=borrowed_records)
-        #---------------------------------------------------------------------------------------------
-
-        # Books that are NOT currently borrowed (either never borrowed or returned)
-        available_books = BookCopy.objects.exclude(
-            id__in=borrowed_books.values_list('id', flat=True)
-        )
-
-        context['borrowed_books'] = borrowed_books
-        context['available_books'] = available_books
-        return context
 
 
 @staff_member_required
@@ -122,19 +95,47 @@ class AuthorCreateView(UserPassesTestMixin, LoginRequiredMixin, generic.CreateVi
 
 
 class BookCreateView(UserPassesTestMixin, LoginRequiredMixin, generic.CreateView):
-    model = BookCopy
+    model = Book
     form_class = BookForm
     template_name = "myApp/add_book.html"
-    success_url = reverse_lazy('myApp:home')
+    success_url = reverse_lazy('myApp:add_book_copy')
 
     def test_func(self):
         return self.request.user.is_staff
 
-    def form_valid(self, form):
-        if not form.instance.barcode:
-            form.instance.barcode = generate_unique_barcode()
-        create_and_assign_barcode(form)
-        return super().form_valid(form)
+
+class BookCopyCreateView(UserPassesTestMixin, LoginRequiredMixin,generic.View):
+    template_name = "myApp/add_book_copy.html"
+    success_url = reverse_lazy('myApp:home')
+
+    def test_func(self):
+        return self.request.user.is_staff
+    
+    def get(self, request, *args, **kwargs):
+        formset = BookCopyFormSet(queryset=BookCopy.objects.none())
+        return render(request, self.template_name, {"formset": formset})
+
+    def post(self, request, *args, **kwargs):
+        formset = BookCopyFormSet(request.POST, request.FILES, queryset=BookCopy.objects.none())
+        if formset.is_valid():
+            has_data = False
+            for form in formset:
+                if form.cleaned_data and not form.cleaned_data.get("DELETE", False):
+                    has_data = True
+                    book_copy = form.save(commit=False)
+                    if not book_copy.barcode:
+                        book_copy.barcode = generate_unique_barcode()
+                        if not book_copy.barcode_image:
+                            create_and_assign_barcode(form)
+                    book_copy.save()
+            if not has_data:
+                formset.non_form_errors = lambda: ["You must fill at least one copybook."]
+                return render(request, self.template_name, {"formset": formset})
+
+            return redirect(self.success_url)
+
+        return render(request, self.template_name, {"formset": formset})
+
 
 
 class BookUpdateView(UserPassesTestMixin, LoginRequiredMixin, generic.UpdateView):

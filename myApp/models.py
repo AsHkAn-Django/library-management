@@ -63,6 +63,7 @@ class BookCopy(models.Model):
         status = "Available" if self.is_available else "Borrowed"
         return f"Copy of {self.book.title} ({status})"
 
+
 class BorrowRecord(models.Model):
     book_copy = models.ForeignKey(
         BookCopy,
@@ -91,7 +92,7 @@ class BorrowRecord(models.Model):
         data = self.get_total_debt_till_now()
         self.total_fee = data['total']
         self.save()
-        return data
+        return self.total_fee
 
     def get_total_debt_till_now(self):
         """Bring the debt of user till now."""

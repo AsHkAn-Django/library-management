@@ -14,5 +14,7 @@ urlpatterns = [
     path('add-copy-book/', views.BookCopyCreateView.as_view(), name='add_copy_book'),
     path('add-book/', views.BookCreateView.as_view(), name='add-book'),
     path('add-author/', views.AuthorCreateView.as_view(), name='add-author'),
+    path('borrow-book/<int:pk>/', views.borrow_book, name='borrow_book'),
+    path('my-borrows/', views.my_borrows_list, name='my_borrows_list'),
     path('', views.IndexTemplateView.as_view(), name='home'),
 ]

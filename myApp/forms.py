@@ -2,7 +2,7 @@ from django import forms
 from django.forms import modelformset_factory, BaseFormSet, ValidationError
 from django.contrib.auth import get_user_model
 
-from .models import Book, Author, BookCopy
+from .models import Book, Author, BookCopy, BorrowRecord
 
 
 SELECT_CHOICES = [
@@ -10,6 +10,14 @@ SELECT_CHOICES = [
     ('Return', 'Return'),
     ('Track', 'Track')
 ]
+
+
+class BorrowForm(forms.ModelForm):
+
+    class Meta:
+        model = BorrowRecord
+        fields = []
+
 
 class BorrowAndReturnForm(forms.Form):
     """A form for borrowing, returning, or tracking a book by barcode."""

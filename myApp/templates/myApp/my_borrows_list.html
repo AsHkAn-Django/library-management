@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+{% load static %}
+
+{% block content %}
+
+<div class="container my-5">
+   <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">My Borrowed List:</h2>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle text-center shadow-sm">
+      <thead class="table-light">
+        <tr>
+          <th>Image</th>
+          <th>Title</th>
+          <th>Barcode</th>
+          <th>Rented Days</th>
+          <th>Borrowed At</th>
+          <th>Returned At</th>
+          <th>Total Fee</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+        <tr>
+          <td>
+              {% if record.book_copy.book.image %}
+              <img src="{{ record.book_copy.book.image.url }}"
+              alt="{{ record.book_copy.book.title }} barcode" style="height:80px;">
+              {% else %}
+              <img src="{% static 'images/No_Image_Available.jpg' %}"
+              alt="{{ record.book_copy.book.title }} barcode" style="height:300px;">
+              {% endif %}
+          </td>
+          <td>{{ record.book_copy.book.title }}</td>
+          <td>
+              {% if record.book_copy.barcode_image %}
+              <img src="{{ record.book_copy.barcode_image.url }}"
+              alt="{{ record.book_copy.book.title }} barcode" style="height:80px;">
+              {% else %}
+              <img src="{% static 'images/No_Image_Available.jpg' %}"
+              alt="{{ record.book_copy.book.title }} barcode" style="height:300px;">
+              {% endif %}
+          </td>
+          <td>{{ record.rented_days }}</td>
+          <td>
+            {{ record.borrowed_at }}
+          </td>
+          <td>
+            {% if record.returned_at %}{{record.returned_at}}{% else %}❌{% endif %}
+         </td>
+          <td>
+            {{ record.get_total_fee }}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-muted">No borrows</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock content %}

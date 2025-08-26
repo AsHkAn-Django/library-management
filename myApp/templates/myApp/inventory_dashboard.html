@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load django_bootstrap5 %}
+{% load static %}
 
 {% block content %}
 <div class="container my-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Inventory Dashboard</h2>
+    <h2 class="mb-0">List of Main Books:</h2>
     <a href="{% url 'myApp:add-book' %}" class="btn btn-primary">
       ➕ Add New Book
     </a>
@@ -17,21 +18,28 @@
           <th>ID</th>
           <th>Title</th>
           <th>Author</th>
-          <th>Barcode</th>
+          <th>Image</th>
           <th>Daily Rent</th>
           <th>Stock</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        {% for book in books %}
+        {% for book in main_books %}
         <tr class="{% if book.stock <= 1 %}table-danger{% endif %}">
           <td>{{ book.id }}</td>
           <td>{{ book.title }}</td>
           <td>{{ book.author.name }}</td>
-          <td><span class="badge bg-secondary">{{ book.barcode }}</span></td>
+          <td>
+              {% if book.image %}
+              <img src="{{ book.image.url }}" alt="{{ book.title }} barcode" style="height:80px;">
+              {% else %}
+              <img src="{% static 'images/No_Image_Available.jpg' %}"
+              alt="{{ book.title }} barcode" style="height:300px;">
+              {% endif %}
+          </td>
           <td>${{ book.daily_rent }}</td>
-          <td><strong>{{ book.stock }}</strong></td>
+          <td><strong>{{ book.copies.count }}</strong></td>
           <td>
             <form action="{% url 'myApp:update-stock' book.pk %}" method="post" class="d-inline">
               {% csrf_token %}
@@ -44,8 +52,77 @@
               <input type="hidden" name="action" value="decrease">
               <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove stock">➖</button>
             </form>
-            <a href="{% url 'myApp:edit-book' book.pk %}" class="btn btn-sm btn-outline-info" title="Edit Book">Edit</a>
+            <a href="{% url 'myApp:edit-book' book.pk %}"
+            class="btn btn-sm btn-outline-info" title="Edit Book">Edit</a>
           </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-muted">No books available in inventory.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<div class="container my-5">
+   <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">List of Main Books:</h2>
+    <a href="{% url 'myApp:add_copy_book' %}" class="btn btn-primary">
+      ➕ Add a Copy Book
+    </a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle text-center shadow-sm">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Barcode Image</th>
+          <th>Image</th>
+          <th>Barcode</th>
+          <th>Availability</th>
+          <th>Borrower</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for copy_book in copy_books %}
+        <tr class="{% if book.stock <= 1 %}table-danger{% endif %}">
+          <td>{{ copy_book.id }}</td>
+          <td>{{ copy_book.book.title }}</td>
+          <td>
+              {% if copy_book.book.image %}
+              <img src="{{ copy_book.book.image.url }}"
+              alt="{{ copy_book.title }} barcode" style="height:80px;">
+              {% else %}
+              <img src="{% static 'images/No_Image_Available.jpg' %}"
+              alt="{{ copy_book.title }} barcode" style="height:300px;">
+              {% endif %}
+          </td>
+          <td>
+              {% if copy_book.barcode_image %}
+              <img src="{{ copy_book.barcode_image.url }}"
+              alt="{{ copy_book.author.title }} barcode" style="height:80px;">
+              {% else %}
+              <img src="{% static 'images/No_Image_Available.jpg' %}"
+              alt="{{ copy_book.author.title }} barcode" style="height:300px;">
+              {% endif %}
+          </td>
+          <td>{{ copy_book.barcode }}</td>
+          <td>
+            {% if copy_book.is_available %}✅{% else %}❌{% endif %}
+          </td>
+          <td>
+            {% if copy_book.is_available %}
+              in the Library
+            {% else %}
+              <strong>{{ copy_book.borrow_records.borrower.username }}</strong>
+            {% endif %}
+
+         </td>
         </tr>
         {% empty %}
         <tr>

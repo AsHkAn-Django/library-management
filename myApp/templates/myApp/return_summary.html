@@ -19,7 +19,13 @@
           <p class="fs-5"><strong>Total Fee:</strong> <span class="text-danger fw-bold">${{ fee_data.total }}</span></p>
         </div>
         <div class="card-footer text-center">
+
+          {% if user.is_staff %}
           <a href="{% url 'myApp:transactions' %}" class="btn btn-outline-secondary">← Back to Transactions</a>
+          {% else %}
+          <a href="{% url 'myApp:my_borrows_list' %}" class="btn btn-outline-secondary">← Back to My Borrows List</a>
+          {% endif %}
+
         </div>
       </div>
     </div>

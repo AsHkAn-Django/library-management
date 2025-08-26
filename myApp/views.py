@@ -7,6 +7,8 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.files.base import ContentFile
+from django.db.models import Sum
+from django.utils import timezone
 
 import barcode
 from barcode.writer import ImageWriter
@@ -16,7 +18,7 @@ from io import BytesIO
 from .models import Author, BookCopy, BorrowRecord, Book
 from .forms import (
     BorrowAndReturnForm, BookForm, AuthorForm, BookCopyFormSet,
-                    BorrowForm
+                    NoFieldBorrowReturnForm
 )
 
 
@@ -90,11 +92,10 @@ def book_transactions(request):
                   {'form': form, 'result': result})
 
 
-@staff_member_required
 @login_required
 def return_summary(request, pk):
     record = get_object_or_404(BorrowRecord, pk=pk)
-    fee_data = record.get_total_fee()
+    fee_data = record.get_total_debt_till_now()
     return render(request, 'myApp/return_summary.html',
                   {'record': record, 'fee_data': fee_data})
 
@@ -227,7 +228,6 @@ def update_stock(request, pk):
                                  f"Stock for '{book.title}' cannot go below zero.")
         else:
             messages.error(request, 'Invalid action.')
-
     return redirect('myApp:inventory-dashboard')
 
 
@@ -235,17 +235,18 @@ def update_stock(request, pk):
 def borrow_book(request, pk):
     book = get_object_or_404(Book, pk=pk)
 
+    if BorrowRecord.objects.filter(
+        book_copy__book=book,
+        borrower=request.user
+        ).exists():
+        messages.warning(
+            request,
+            'You have already borrowed a copy of this book.')
+        return redirect('myApp:my_borrows_list')
+
     if request.method == "POST":
-        form = BorrowForm(request.POST)
+        form = NoFieldBorrowReturnForm(request.POST)
         if form.is_valid():
-            if BorrowRecord.objects.filter(
-                book_copy__book=book,
-                borrower=request.user
-                ).exists():
-                messages.warning(
-                    request,
-                    'You have already borrowed a copy of this book.')
-                return redirect('myApp:home')
             book_copy = book.copies.filter(is_available=True).first()
             if book_copy is not None:
                 form.instance.book_copy = book_copy
@@ -262,7 +263,7 @@ def borrow_book(request, pk):
                     'Unfortunately there is no any available copy of this book.')
             return redirect('myApp:home')
 
-    form = BorrowForm()
+    form = NoFieldBorrowReturnForm()
     return render(request, 'myApp/borrow_book.html', {"form": form,
                                                       "book": book})
 
@@ -271,4 +272,38 @@ def my_borrows_list(request):
     records = BorrowRecord.objects.filter(
         borrower=request.user
         ).select_related('book_copy', 'book_copy__book')
-    return render(request, 'myApp/my_borrows_list.html', {"records": records})
+
+    total_debt = 0
+    for record in records:
+        record.total_fee = record.get_total_fee()
+        total_debt += record.total_fee
+
+    return render(request, 'myApp/my_borrows_list.html', {
+        "records": records,
+        "total_debt": total_debt,
+    })
+
+
+
+@login_required
+def return_book(request, pk):
+    record = get_object_or_404(BorrowRecord, pk=pk)
+    if record.returned_at:
+        messages.warning(request, 'You have already returned this book.')
+        return redirect('myApp:my_borrows_list')
+
+    if request.method == 'POST':
+        form = NoFieldBorrowReturnForm(request.POST)
+        if form.is_valid():
+            record.returned_at = timezone.now()
+            record.book_copy.is_available = True
+            record.book_copy.save()
+            record.save()
+            return redirect('myApp:return_summary', pk=pk)
+    form = NoFieldBorrowReturnForm()
+    return render(request, 'myApp/return_book.html',
+                  {
+                      "book": record.book_copy.book,
+                      "form": form,
+                  })
+

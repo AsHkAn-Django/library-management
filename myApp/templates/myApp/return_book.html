@@ -2,12 +2,13 @@
 {% load django_bootstrap5 %}
 
 {% block content %}
-    <div class="container my-5">
+    <div class="container my-5 text-center">
         <h2 class="text-center mb-4">Are you sure you want to return "{{ book.title }}"?</h2>
         <form action="" method="post">
             {% csrf_token %}
             {% bootstrap_form form %}
-            <button type="submit" class="btn btn-outline-primary w-100">Return</button>
+            <button type="submit" class="btn btn-outline-primary m-5">Yes</button>
+            <a href="" class="btn btn-outline-danger m-5">No</a>
         </form>
     </div>
 {% endblock content %}

@@ -12,7 +12,7 @@ SELECT_CHOICES = [
 ]
 
 
-class BorrowForm(forms.ModelForm):
+class NoFieldBorrowReturnForm(forms.ModelForm):
 
     class Meta:
         model = BorrowRecord

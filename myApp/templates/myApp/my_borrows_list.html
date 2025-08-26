@@ -49,10 +49,14 @@
             {{ record.borrowed_at }}
           </td>
           <td>
-            {% if record.returned_at %}{{record.returned_at}}{% else %}❌{% endif %}
+            {% if record.returned_at %}
+            {{record.returned_at}}
+            {% else %}
+            <a href="{% url 'myApp:return_book' record.pk %}" class="btn btn-info btn-sm">Return it</a>
+            {% endif %}
          </td>
           <td>
-            {{ record.get_total_fee }}
+            ${{ record.total_fee }}
           </td>
         </tr>
         {% empty %}
@@ -62,6 +66,7 @@
         {% endfor %}
       </tbody>
     </table>
+    <h5 class="text-end">Total: ${{total_debt}}</h5>
   </div>
 </div>
 {% endblock content %}

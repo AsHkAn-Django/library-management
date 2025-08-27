@@ -221,6 +221,46 @@
           </div>
         </div>
       </div>
+
+      <div class="col-12 col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="ratio ratio-16x9">
+              <canvas id="chart5"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="ratio ratio-16x9">
+              <canvas id="chart6"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="ratio ratio-16x9">
+              <canvas id="chart7"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="ratio ratio-16x9">
+              <canvas id="chart8"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -232,11 +272,11 @@
         new Chart(document.getElementById("chart1"), {
           type: "bar",
           data: {
-            labels: data.labels,
+            labels: data.chart1.labels,
             datasets: [
               {
-                label: "Votes",
-                data: data.values,
+                label: "Books",
+                data: data.chart1.values,
                 backgroundColor: [
                   "rgba(255, 99, 132, 0.4)", // soft red
                   "rgba(54, 162, 235, 0.4)", // soft blue
@@ -258,19 +298,121 @@
               },
               title: {
                 display: true,
-                text: "Chart.js Line Chart",
+                text: "Number of copies for each book",
               },
             },
           },
         });
         new Chart(document.getElementById("chart2"), {
-          type: "line",
+          type: "bar",
           data: {
-            labels: data.labels,
+            labels: data.chart2.labels,
             datasets: [
               {
-                label: "Votes",
-                data: data.values,
+                label: "Copies",
+                data: data.chart2.values,
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.4)", // soft red
+                  "rgba(54, 162, 235, 0.4)", // soft blue
+                  "rgba(255, 206, 86, 0.4)", // light yellow
+                  "rgba(255, 159, 243, 0.4)", // soft pink
+                  "rgba(153, 102, 255, 0.4)", // light purple
+                  "rgba(75, 192, 192, 0.4)", // mint green / teal
+                  "rgba(255, 215, 0, 0.4)", // gold / light orange
+                ],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Number of copies for each Author",
+              },
+            },
+          },
+        });
+        new Chart(document.getElementById("chart3"), {
+          type: "bar",
+          data: {
+            labels: data.chart3.labels,
+            datasets: [
+              {
+                label: "Books",
+                data: data.chart3.values,
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.4)", // soft red
+                  "rgba(54, 162, 235, 0.4)", // soft blue
+                  "rgba(255, 206, 86, 0.4)", // light yellow
+                  "rgba(255, 159, 243, 0.4)", // soft pink
+                  "rgba(153, 102, 255, 0.4)", // light purple
+                  "rgba(75, 192, 192, 0.4)", // mint green / teal
+                  "rgba(255, 215, 0, 0.4)", // gold / light orange
+                ],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Number of books for each Author",
+              },
+            },
+          },
+        });
+        new Chart(document.getElementById("chart4"), {
+          type: "bar",
+          data: {
+            labels: data.chart4.labels,
+            datasets: [
+              {
+                label: "price($)",
+                data: data.chart4.values,
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.4)", // soft red
+                  "rgba(54, 162, 235, 0.4)", // soft blue
+                  "rgba(255, 206, 86, 0.4)", // light yellow
+                  "rgba(255, 159, 243, 0.4)", // soft pink
+                  "rgba(153, 102, 255, 0.4)", // light purple
+                  "rgba(75, 192, 192, 0.4)", // mint green / teal
+                  "rgba(255, 215, 0, 0.4)", // gold / light orange
+                ],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Daily rent of each book",
+              },
+            },
+          },
+        });
+        new Chart(document.getElementById("chart5"), {
+          type: "line",
+          data: {
+            labels: data.chart5.labels,
+            datasets: [
+              {
+                label: "times",
+                data: data.chart5.values,
                 backgroundColor: [
                   "rgba(255, 99, 132, 0.4)", // soft red
                   "rgba(54, 162, 235, 0.4)", // soft blue
@@ -286,8 +428,8 @@
           options: {
             scales: {
               y: {
-                beginAtZero:true
-              }
+                beginAtZero: true,
+              },
             },
             responsive: true, // allow it to resize inside Bootstrap grid
             maintainAspectRatio: false, // so it fits the ratio container
@@ -297,19 +439,19 @@
               },
               title: {
                 display: true,
-                text: "Chart.js Line Chart",
+                text: "Number of times each book borrowed",
               },
             },
           },
         });
-        new Chart(document.getElementById("chart3"), {
+        new Chart(document.getElementById("chart6"), {
           type: "pie",
           data: {
-            labels: data.labels,
+            labels: data.chart6.labels,
             datasets: [
               {
-                label: "Votes",
-                data: data.values,
+                label: "books",
+                data: data.chart6.values,
                 backgroundColor: [
                   "rgba(255, 99, 132, 0.4)", // soft red
                   "rgba(54, 162, 235, 0.4)", // soft blue
@@ -331,21 +473,28 @@
               },
               title: {
                 display: true,
-                text: "Chart.js Line Chart",
+                text: "Number of unavilable(borrowed) books now",
               },
             },
           },
         });
-        new Chart(document.getElementById("chart4"), {
-          type: "radar",
+        new Chart(document.getElementById("chart7"), {
+          type: "bar",
           data: {
-            labels: data.labels,
+            labels: data.chart7.labels,
             datasets: [
               {
-                label: "Votes",
-                data: data.values,
-                borderColor: "rgba(255, 99, 132, 1)",
-                backgroundColor: "rgba(255, 99, 132, 0.2)",
+                label: "revenue($)",
+                data: data.chart7.values,
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.4)", // soft red
+                  "rgba(54, 162, 235, 0.4)", // soft blue
+                  "rgba(255, 206, 86, 0.4)", // light yellow
+                  "rgba(255, 159, 243, 0.4)", // soft pink
+                  "rgba(153, 102, 255, 0.4)", // light purple
+                  "rgba(75, 192, 192, 0.4)", // mint green / teal
+                  "rgba(255, 215, 0, 0.4)", // gold / light orange
+                ],
               },
             ],
           },
@@ -358,7 +507,41 @@
               },
               title: {
                 display: true,
-                text: "Chart.js Line Chart",
+                text: "Revenue for each book",
+              },
+            },
+          },
+        });
+        new Chart(document.getElementById("chart8"), {
+          type: "bar",
+          data: {
+            labels: data.chart8.labels,
+            datasets: [
+              {
+                label: "revenue($)",
+                data: data.chart8.values,
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.4)", // soft red
+                  "rgba(54, 162, 235, 0.4)", // soft blue
+                  "rgba(255, 206, 86, 0.4)", // light yellow
+                  "rgba(255, 159, 243, 0.4)", // soft pink
+                  "rgba(153, 102, 255, 0.4)", // light purple
+                  "rgba(75, 192, 192, 0.4)", // mint green / teal
+                  "rgba(255, 215, 0, 0.4)", // gold / light orange
+                ],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Revenue for each User",
               },
             },
           },

@@ -8,7 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 from django.http import JsonResponse
-
+from django.db.models import Sum
+from django.contrib.auth import get_user_model
 
 
 from .models import Author, BookCopy, BorrowRecord, Book
@@ -291,34 +292,99 @@ def return_book(request, pk):
 
 
 def chart_data(request):
-    # each book how many copies has
-    books = Book.objects.all()
-    copies = [book.copies.count() for book in books]
+    # quries
+    queried_authors = Author.objects.prefetch_related(
+        'books',
+        'books__copies',
+        'books__copies__borrow_records'
+    )
 
-    # each author how many books has
+    queried_main_books = Book.objects.select_related(
+        'author'
+        ).prefetch_related(
+        'copies'
+    )
+
+    # each book how many copies has
+    books_list = [book.title for book in queried_main_books]
+    copies = [book.copies.count() for book in queried_main_books]
 
     # each author how many copies has
+    authors_list = [author.name for author in queried_authors]
+    author_copies_count = [
+        sum(book.copies.count() for book in author.books.all())
+        for author in queried_authors
+    ]
+
+    # each author how many books has
+    authors_list = authors_list
+    author_books_count = [author.books.count() for author in queried_authors]
+
+    # daily_rent of each book
+    books_list = books_list
+    daily_rent_list = [book.daily_rent for book in queried_main_books]
 
     # each book how many times were borrwed
+    books_list = books_list
+    book_borrowed_counts = [
+        sum(len(copy.borrow_records.all()) for copy in book.copies.all())
+        for book in queried_main_books
+    ]
 
     # the books wich are borrowed now
-
-    # hot books
-
-    # price of each book
+    books_list = books_list
+    books_are_borrowed_now = [
+        sum(1 for copy in book.copies.all() if not copy.is_available)
+        for book in queried_main_books
+    ]
 
     # the books with the highest revenue
+    books_list = books_list
+    books_with_revenue = queried_main_books.annotate(
+        revenue=Sum("copies__borrow_records__total_fee")
+    )
+    books_revenue = [book.revenue or 0 for book in books_with_revenue]
 
-    # data = {
-    #     "labels": [
-    #         "Red", "Blue", "Yellow", "Green", "Purple",
-    #         "Orange", "Black", "White", "Gray", "Pink"
-    #     ],
-    #     "values": [12, 19, 3, 5, 2, 8, 15, 7, 10, 4],
-    # }
+    # users base on the revenue
+    users_with_revenue = get_user_model().objects.annotate(
+        revenue=Sum("borrowed_books__total_fee")
+    ).order_by('-revenue')
+    users_list = [user.username for user in users_with_revenue]
+    revenues_list = [user.revenue for user in users_with_revenue]
+
     return JsonResponse(
         {
-            "labels": [book.title for book in books],
-            "values": copies
+            "chart1": {
+                "labels": books_list,
+                "values": copies
+            },
+            "chart2": {
+                "labels": authors_list,
+                "values": author_copies_count
+            },
+            "chart3": {
+                "labels": authors_list,
+                "values": author_books_count
+            },
+            "chart4": {
+                "labels": books_list,
+                "values": daily_rent_list
+            },
+            "chart5": {
+                "labels": books_list,
+                "values": book_borrowed_counts
+            },
+            "chart6": {
+                "labels": books_list,
+                "values": books_are_borrowed_now
+            },
+            "chart7": {
+                "labels": books_list,
+                "values": books_revenue
+            },
+            "chart8": {
+                "labels": users_list,
+                "values": revenues_list
+            }
         }
     )

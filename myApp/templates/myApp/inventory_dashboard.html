@@ -1,7 +1,4 @@
-{% extends 'base.html' %}
-{% load django_bootstrap5 %}
-{% load static %}
-
+{% extends 'base.html' %} {% load django_bootstrap5 %} {% load static %}
 {% block content %}
 <div class="container my-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -12,7 +9,9 @@
   </div>
 
   <div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle text-center shadow-sm">
+    <table
+      class="table table-bordered table-hover align-middle text-center shadow-sm"
+    >
       <thead class="table-light">
         <tr>
           <th>ID</th>
@@ -31,34 +30,67 @@
           <td>{{ book.title }}</td>
           <td>{{ book.author.name }}</td>
           <td>
-              {% if book.image %}
-              <img src="{{ book.image.url }}" alt="{{ book.title }} barcode" style="height:80px;">
-              {% else %}
-              <img src="{% static 'images/No_Image_Available.jpg' %}"
-              alt="{{ book.title }} barcode" style="height:300px;">
-              {% endif %}
+            {% if book.image %}
+            <img
+              src="{{ book.image.url }}"
+              alt="{{ book.title }} barcode"
+              style="height: 80px"
+            />
+            {% else %}
+            <img
+              src="{% static 'images/No_Image_Available.jpg' %}"
+              alt="{{ book.title }} barcode"
+              style="height: 300px"
+            />
+            {% endif %}
           </td>
           <td>${{ book.daily_rent }}</td>
           <td><strong>{{ book.copies.count }}</strong></td>
           <td>
-            <form action="{% url 'myApp:update-stock' book.pk %}" method="post" class="d-inline">
+            <form
+              action="{% url 'myApp:update-stock' book.pk %}"
+              method="post"
+              class="d-inline"
+            >
               {% csrf_token %}
-              <input type="hidden" name="action" value="increase">
-              <button type="submit" class="btn btn-sm btn-outline-success" title="Add stock">➕</button>
+              <input type="hidden" name="action" value="increase" />
+              <button
+                type="submit"
+                class="btn btn-sm btn-outline-success"
+                title="Add stock"
+              >
+                ➕
+              </button>
             </form>
 
-            <form action="{% url 'myApp:update-stock' book.pk %}" method="post" class="d-inline">
+            <form
+              action="{% url 'myApp:update-stock' book.pk %}"
+              method="post"
+              class="d-inline"
+            >
               {% csrf_token %}
-              <input type="hidden" name="action" value="decrease">
-              <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove stock">➖</button>
+              <input type="hidden" name="action" value="decrease" />
+              <button
+                type="submit"
+                class="btn btn-sm btn-outline-danger"
+                title="Remove stock"
+              >
+                ➖
+              </button>
             </form>
-            <a href="{% url 'myApp:edit-book' book.pk %}"
-            class="btn btn-sm btn-outline-info" title="Edit Book">Edit</a>
+            <a
+              href="{% url 'myApp:edit-book' book.pk %}"
+              class="btn btn-sm btn-outline-info"
+              title="Edit Book"
+              >Edit</a
+            >
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7" class="text-muted">No books available in inventory.</td>
+          <td colspan="7" class="text-muted">
+            No books available in inventory.
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -66,17 +98,18 @@
   </div>
 </div>
 
-
 <div class="container my-5">
-   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">List of Main Books:</h2>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">List of Copies:</h2>
     <a href="{% url 'myApp:add_copy_book' %}" class="btn btn-primary">
       ➕ Add a Copy Book
     </a>
   </div>
 
   <div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle text-center shadow-sm">
+    <table
+      class="table table-bordered table-hover align-middle text-center shadow-sm"
+    >
       <thead class="table-light">
         <tr>
           <th>ID</th>
@@ -94,43 +127,243 @@
           <td>{{ copy_book.id }}</td>
           <td>{{ copy_book.book.title }}</td>
           <td>
-              {% if copy_book.book.image %}
-              <img src="{{ copy_book.book.image.url }}"
-              alt="{{ copy_book.title }} barcode" style="height:80px;">
-              {% else %}
-              <img src="{% static 'images/No_Image_Available.jpg' %}"
-              alt="{{ copy_book.title }} barcode" style="height:300px;">
-              {% endif %}
+            {% if copy_book.book.image %}
+            <img
+              src="{{ copy_book.book.image.url }}"
+              alt="{{ copy_book.title }} barcode"
+              style="height: 80px"
+            />
+            {% else %}
+            <img
+              src="{% static 'images/No_Image_Available.jpg' %}"
+              alt="{{ copy_book.title }} barcode"
+              style="height: 300px"
+            />
+            {% endif %}
           </td>
           <td>
-              {% if copy_book.barcode_image %}
-              <img src="{{ copy_book.barcode_image.url }}"
-              alt="{{ copy_book.author.title }} barcode" style="height:80px;">
-              {% else %}
-              <img src="{% static 'images/No_Image_Available.jpg' %}"
-              alt="{{ copy_book.author.title }} barcode" style="height:300px;">
-              {% endif %}
+            {% if copy_book.barcode_image %}
+            <img
+              src="{{ copy_book.barcode_image.url }}"
+              alt="{{ copy_book.author.title }} barcode"
+              style="height: 80px"
+            />
+            {% else %}
+            <img
+              src="{% static 'images/No_Image_Available.jpg' %}"
+              alt="{{ copy_book.author.title }} barcode"
+              style="height: 300px"
+            />
+            {% endif %}
           </td>
           <td>{{ copy_book.barcode }}</td>
+          <td>{% if copy_book.is_available %}✅{% else %}❌{% endif %}</td>
           <td>
-            {% if copy_book.is_available %}✅{% else %}❌{% endif %}
-          </td>
-          <td>
-            {% if copy_book.is_available %}
-              in the Library
-            {% else %}
-              <strong>{{ copy_book.borrow_records.borrower.username }}</strong>
+            {% if copy_book.is_available %} in the Library {% else %}
+            <strong>{{ copy_book.borrow_records.borrower.username }}</strong>
             {% endif %}
-
-         </td>
+          </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7" class="text-muted">No books available in inventory.</td>
+          <td colspan="7" class="text-muted">
+            No books available in inventory.
+          </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
+  <h2 class="my-5">Charts</h2>
+  <div class="container my-4">
+    <div class="row g-3">
+      <!-- Chart 1 -->
+      <div class="col-12 col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="ratio ratio-16x9">
+              <canvas id="chart1"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 2 -->
+      <div class="col-12 col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="ratio ratio-16x9">
+              <canvas id="chart2"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 3 -->
+      <div class="col-12 col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="ratio ratio-16x9">
+              <canvas id="chart3"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 4 -->
+      <div class="col-12 col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="ratio ratio-16x9">
+              <canvas id="chart4"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    fetch("{% url 'myApp:chart_data'%}")
+      .then((response) => response.json())
+      .then((data) => {
+        new Chart(document.getElementById("chart1"), {
+          type: "bar",
+          data: {
+            labels: data.labels,
+            datasets: [
+              {
+                label: "Votes",
+                data: data.values,
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.4)", // soft red
+                  "rgba(54, 162, 235, 0.4)", // soft blue
+                  "rgba(255, 206, 86, 0.4)", // light yellow
+                  "rgba(255, 159, 243, 0.4)", // soft pink
+                  "rgba(153, 102, 255, 0.4)", // light purple
+                  "rgba(75, 192, 192, 0.4)", // mint green / teal
+                  "rgba(255, 215, 0, 0.4)", // gold / light orange
+                ],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Chart.js Line Chart",
+              },
+            },
+          },
+        });
+        new Chart(document.getElementById("chart2"), {
+          type: "line",
+          data: {
+            labels: data.labels,
+            datasets: [
+              {
+                label: "Votes",
+                data: data.values,
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.4)", // soft red
+                  "rgba(54, 162, 235, 0.4)", // soft blue
+                  "rgba(255, 206, 86, 0.4)", // light yellow
+                  "rgba(255, 159, 243, 0.4)", // soft pink
+                  "rgba(153, 102, 255, 0.4)", // light purple
+                  "rgba(75, 192, 192, 0.4)", // mint green / teal
+                  "rgba(255, 215, 0, 0.4)", // gold / light orange
+                ],
+              },
+            ],
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero:true
+              }
+            },
+            responsive: true, // allow it to resize inside Bootstrap grid
+            maintainAspectRatio: false, // so it fits the ratio container
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Chart.js Line Chart",
+              },
+            },
+          },
+        });
+        new Chart(document.getElementById("chart3"), {
+          type: "pie",
+          data: {
+            labels: data.labels,
+            datasets: [
+              {
+                label: "Votes",
+                data: data.values,
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.4)", // soft red
+                  "rgba(54, 162, 235, 0.4)", // soft blue
+                  "rgba(255, 206, 86, 0.4)", // light yellow
+                  "rgba(255, 159, 243, 0.4)", // soft pink
+                  "rgba(153, 102, 255, 0.4)", // light purple
+                  "rgba(75, 192, 192, 0.4)", // mint green / teal
+                  "rgba(255, 215, 0, 0.4)", // gold / light orange
+                ],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Chart.js Line Chart",
+              },
+            },
+          },
+        });
+        new Chart(document.getElementById("chart4"), {
+          type: "radar",
+          data: {
+            labels: data.labels,
+            datasets: [
+              {
+                label: "Votes",
+                data: data.values,
+                borderColor: "rgba(255, 99, 132, 1)",
+                backgroundColor: "rgba(255, 99, 132, 0.2)",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "Chart.js Line Chart",
+              },
+            },
+          },
+        });
+      });
+  </script>
+  {% endblock content %}
 </div>
-{% endblock content %}

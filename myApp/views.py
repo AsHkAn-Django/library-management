@@ -6,14 +6,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
-from django.core.files.base import ContentFile
-from django.db.models import Sum
 from django.utils import timezone
+from django.http import JsonResponse
 
-import barcode
-from barcode.writer import ImageWriter
-import random
-from io import BytesIO
+
 
 from .models import Author, BookCopy, BorrowRecord, Book
 from .forms import (
@@ -121,7 +117,6 @@ def return_summary(request, pk):
                   {'record': record, 'fee_data': fee_data})
 
 
-
 class AuthorCreateView(UserPassesTestMixin, LoginRequiredMixin, generic.CreateView):
     model = Author
     form_class = AuthorForm
@@ -159,10 +154,6 @@ class BookCopyCreateView(UserPassesTestMixin, LoginRequiredMixin, generic.View):
             for form in formset:
                 if form.cleaned_data:
                     book_copy = form.save(commit=False)
-                    if not book_copy.barcode:
-                        book_copy.barcode = generate_unique_barcode()
-                        if not book_copy.barcode_image:
-                            create_and_assign_barcode(book_copy)
                     book_copy.save()
             return redirect(self.success_url)
         return render(request, self.template_name, {"formset": formset})
@@ -176,38 +167,6 @@ class BookUpdateView(UserPassesTestMixin, LoginRequiredMixin, generic.UpdateView
 
     def test_func(self):
         return self.request.user.is_staff
-
-
-def create_and_assign_barcode(book):
-    """
-    Create barcode image and assign it to the book field.
-    """
-    barcode_str = book.barcode
-    BarcodeClass = barcode.get_barcode_class('code128')
-    ean = BarcodeClass(barcode_str, writer=ImageWriter())
-
-    # Save barcode image to memory buffer
-    buffer = BytesIO()
-    ean.write(buffer)
-    buffer.seek(0)
-
-    # Create Django-friendly file object
-    file_name = f"{barcode_str}.png"
-    django_file = ContentFile(buffer.read(), name=file_name)
-
-    # Save to the ImageField using Django's storage backend (Cloudflare R2)
-    book.barcode_image.save(file_name, django_file, save=False)
-
-
-def generate_unique_barcode(length=12):
-    """
-    If admin didn't add the barcode manually create a random one
-    which is also unique and doesn't exist.
-    """
-    while True:
-        code = ''.join(random.choices('0123456789', k=length))
-        if not BookCopy.objects.filter(barcode=code).exists():
-            return code
 
 
 @staff_member_required
@@ -289,6 +248,7 @@ def borrow_book(request, pk):
     return render(request, 'myApp/borrow_book.html', {"form": form,
                                                       "book": book})
 
+
 @login_required
 def my_borrows_list(request):
     records = BorrowRecord.objects.filter(
@@ -329,3 +289,36 @@ def return_book(request, pk):
                       "form": form,
                   })
 
+
+def chart_data(request):
+    # each book how many copies has
+    books = Book.objects.all()
+    copies = [book.copies.count() for book in books]
+
+    # each author how many books has
+
+    # each author how many copies has
+
+    # each book how many times were borrwed
+
+    # the books wich are borrowed now
+
+    # hot books
+
+    # price of each book
+
+    # the books with the highest revenue
+
+    # data = {
+    #     "labels": [
+    #         "Red", "Blue", "Yellow", "Green", "Purple",
+    #         "Orange", "Black", "White", "Gray", "Pink"
+    #     ],
+    #     "values": [12, 19, 3, 5, 2, 8, 15, 7, 10, 4],
+    # }
+    return JsonResponse(
+        {
+            "labels": [book.title for book in books],
+            "values": copies
+        }
+    )

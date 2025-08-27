@@ -3,7 +3,12 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.utils import timezone
 from datetime import timedelta
+from django.core.files.base import ContentFile
 
+import barcode
+from barcode.writer import ImageWriter
+import random
+from io import BytesIO
 
 
 class Author(models.Model):
@@ -58,6 +63,46 @@ class BookCopy(models.Model):
         null=True
     )
     is_available = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if not self.barcode:
+            self.barcode = self.generate_unique_barcode()
+            self.create_and_assign_barcode()
+        elif not self.barcode_image:
+            self.create_and_assign_barcode()
+
+        super().save(*args, **kwargs)
+
+    def create_and_assign_barcode(self):
+        """
+        Create barcode image and assign it to the book field.
+        """
+        barcode_str = self.barcode
+        BarcodeClass = barcode.get_barcode_class('code128')
+        ean = BarcodeClass(barcode_str, writer=ImageWriter())
+
+        # Save barcode image to memory buffer
+        buffer = BytesIO()
+        ean.write(buffer)
+        buffer.seek(0)
+
+        # Create Django-friendly file object
+        file_name = f"{barcode_str}.png"
+        django_file = ContentFile(buffer.read(), name=file_name)
+
+        # Save to the ImageField using Django's storage backend (Cloudflare R2)
+        self.barcode_image.save(file_name, django_file, save=False)
+
+
+    def generate_unique_barcode(self, length=12):
+        """
+        If admin didn't add the barcode manually create a random one
+        which is also unique and doesn't exist.
+        """
+        while True:
+            code = ''.join(random.choices('0123456789', k=length))
+            if not BookCopy.objects.filter(barcode=code).exists():
+                return code
 
     def __str__(self):
         status = "Available" if self.is_available else "Borrowed"

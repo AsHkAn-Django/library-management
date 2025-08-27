@@ -17,5 +17,6 @@ urlpatterns = [
     path('borrow-book/<int:pk>/', views.borrow_book, name='borrow_book'),
     path('my-borrows/', views.my_borrows_list, name='my_borrows_list'),
     path('return-book/<int:pk>/', views.return_book, name='return_book'),
+    path('chart-data/', views.chart_data, name='chart_data'),
     path('', views.IndexTemplateView.as_view(), name='home'),
 ]

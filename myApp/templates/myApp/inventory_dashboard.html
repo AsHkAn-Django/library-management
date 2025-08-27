@@ -4,8 +4,27 @@
 
 {% block content %}
 <div class="container my-5">
+
+  <div class="card shadow-sm border-primary my-5">
+    <div class="card-body text-center">
+      <h5 class="card-title text-primary"> Generate PDF Report</h5>
+      <p class="card-text">
+        Click the button below to download a complete PDF report of all books and charts.
+      </p>
+      <form method="post" action="{% url 'myApp:generate_report_pdf' %}" id="pdfForm">
+        {% csrf_token %}
+        {% for i in "12345678" %}
+        <input type="hidden" name="chart{{ i }}_image" id="chart{{ i }}_image_input">
+        {% endfor %}
+        <button type="submit" class="btn btn-lg btn-primary">
+           Download PDF
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Main Books Section -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex justify-content-between align-items-center my-5">
     <h2 class="mb-0">List of Main Books:</h2>
     <a href="{% url 'myApp:add-book' %}" class="btn btn-primary">➕ Add New Book</a>
   </div>
@@ -119,15 +138,6 @@
       </tbody>
     </table>
   </div>
-
-  <!-- PDF Form -->
-  <form method="post" action="{% url 'myApp:generate_report_pdf' %}" id="pdfForm">
-    {% csrf_token %}
-    {% for i in "12345678" %}
-    <input type="hidden" name="chart{{ i }}_image" id="chart{{ i }}_image_input">
-    {% endfor %}
-    <button type="submit" class="btn btn-primary">Download PDF</button>
-  </form>
 
   <h2 class="my-5">Charts</h2>
   <div class="container my-4">

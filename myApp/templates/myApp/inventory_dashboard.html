@@ -1,17 +1,17 @@
-{% extends 'base.html' %} {% load django_bootstrap5 %} {% load static %}
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+{% load static %}
+
 {% block content %}
 <div class="container my-5">
+  <!-- Main Books Section -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">List of Main Books:</h2>
-    <a href="{% url 'myApp:add-book' %}" class="btn btn-primary">
-      ➕ Add New Book
-    </a>
+    <a href="{% url 'myApp:add-book' %}" class="btn btn-primary">➕ Add New Book</a>
   </div>
 
   <div class="table-responsive">
-    <table
-      class="table table-bordered table-hover align-middle text-center shadow-sm"
-    >
+    <table class="table table-bordered table-hover align-middle text-center shadow-sm">
       <thead class="table-light">
         <tr>
           <th>ID</th>
@@ -31,66 +31,30 @@
           <td>{{ book.author.name }}</td>
           <td>
             {% if book.image %}
-            <img
-              src="{{ book.image.url }}"
-              alt="{{ book.title }} barcode"
-              style="height: 80px"
-            />
+            <img src="{{ book.image.url }}" alt="{{ book.title }}" style="height: 80px;">
             {% else %}
-            <img
-              src="{% static 'images/No_Image_Available.jpg' %}"
-              alt="{{ book.title }} barcode"
-              style="height: 300px"
-            />
+            <img src="{% static 'images/No_Image_Available.jpg' %}" alt="{{ book.title }}" style="height: 80px;">
             {% endif %}
           </td>
           <td>${{ book.daily_rent }}</td>
           <td><strong>{{ book.copies.count }}</strong></td>
           <td>
-            <form
-              action="{% url 'myApp:update-stock' book.pk %}"
-              method="post"
-              class="d-inline"
-            >
+            <form action="{% url 'myApp:update-stock' book.pk %}" method="post" class="d-inline">
               {% csrf_token %}
-              <input type="hidden" name="action" value="increase" />
-              <button
-                type="submit"
-                class="btn btn-sm btn-outline-success"
-                title="Add stock"
-              >
-                ➕
-              </button>
+              <input type="hidden" name="action" value="increase">
+              <button type="submit" class="btn btn-sm btn-outline-success" title="Add stock">➕</button>
             </form>
-
-            <form
-              action="{% url 'myApp:update-stock' book.pk %}"
-              method="post"
-              class="d-inline"
-            >
+            <form action="{% url 'myApp:update-stock' book.pk %}" method="post" class="d-inline">
               {% csrf_token %}
-              <input type="hidden" name="action" value="decrease" />
-              <button
-                type="submit"
-                class="btn btn-sm btn-outline-danger"
-                title="Remove stock"
-              >
-                ➖
-              </button>
+              <input type="hidden" name="action" value="decrease">
+              <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove stock">➖</button>
             </form>
-            <a
-              href="{% url 'myApp:edit-book' book.pk %}"
-              class="btn btn-sm btn-outline-info"
-              title="Edit Book"
-              >Edit</a
-            >
+            <a href="{% url 'myApp:edit-book' book.pk %}" class="btn btn-sm btn-outline-info" title="Edit Book">Edit</a>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7" class="text-muted">
-            No books available in inventory.
-          </td>
+          <td colspan="7" class="text-muted">No books available in inventory.</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -98,24 +62,21 @@
   </div>
 </div>
 
+<!-- Copies Section -->
 <div class="container my-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">List of Copies:</h2>
-    <a href="{% url 'myApp:add_copy_book' %}" class="btn btn-primary">
-      ➕ Add a Copy Book
-    </a>
+    <a href="{% url 'myApp:add_copy_book' %}" class="btn btn-primary">➕ Add a Copy Book</a>
   </div>
 
   <div class="table-responsive">
-    <table
-      class="table table-bordered table-hover align-middle text-center shadow-sm"
-    >
+    <table class="table table-bordered table-hover align-middle text-center shadow-sm">
       <thead class="table-light">
         <tr>
           <th>ID</th>
           <th>Title</th>
+          <th>Book Image</th>
           <th>Barcode Image</th>
-          <th>Image</th>
           <th>Barcode</th>
           <th>Availability</th>
           <th>Borrower</th>
@@ -123,430 +84,127 @@
       </thead>
       <tbody>
         {% for copy_book in copy_books %}
-        <tr class="{% if book.stock <= 1 %}table-danger{% endif %}">
+        <tr>
           <td>{{ copy_book.id }}</td>
           <td>{{ copy_book.book.title }}</td>
           <td>
             {% if copy_book.book.image %}
-            <img
-              src="{{ copy_book.book.image.url }}"
-              alt="{{ copy_book.title }} barcode"
-              style="height: 80px"
-            />
+            <img src="{{ copy_book.book.image.url }}" alt="{{ copy_book.book.title }}" style="height: 80px;">
             {% else %}
-            <img
-              src="{% static 'images/No_Image_Available.jpg' %}"
-              alt="{{ copy_book.title }} barcode"
-              style="height: 300px"
-            />
+            <img src="{% static 'images/No_Image_Available.jpg' %}" alt="{{ copy_book.book.title }}" style="height: 80px;">
             {% endif %}
           </td>
           <td>
             {% if copy_book.barcode_image %}
-            <img
-              src="{{ copy_book.barcode_image.url }}"
-              alt="{{ copy_book.author.title }} barcode"
-              style="height: 80px"
-            />
+            <img src="{{ copy_book.barcode_image.url }}" alt="{{ copy_book.book.title }}" style="height: 80px;">
             {% else %}
-            <img
-              src="{% static 'images/No_Image_Available.jpg' %}"
-              alt="{{ copy_book.author.title }} barcode"
-              style="height: 300px"
-            />
+            <img src="{% static 'images/No_Image_Available.jpg' %}" alt="{{ copy_book.book.title }}" style="height: 80px;">
             {% endif %}
           </td>
           <td>{{ copy_book.barcode }}</td>
           <td>{% if copy_book.is_available %}✅{% else %}❌{% endif %}</td>
           <td>
-            {% if copy_book.is_available %} in the Library {% else %}
-            <strong>{{ copy_book.borrow_records.borrower.username }}</strong>
+            {% if copy_book.is_available %}
+              In the Library
+            {% else %}
+              <strong>{{ copy_book.borrow_records.last.borrower.username }}</strong>
             {% endif %}
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7" class="text-muted">
-            No books available in inventory.
-          </td>
+          <td colspan="7" class="text-muted">No books available in inventory.</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
+  <!-- PDF Form -->
+  <form method="post" action="{% url 'myApp:generate_report_pdf' %}" id="pdfForm">
+    {% csrf_token %}
+    {% for i in "12345678" %}
+    <input type="hidden" name="chart{{ i }}_image" id="chart{{ i }}_image_input">
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Download PDF</button>
+  </form>
+
   <h2 class="my-5">Charts</h2>
   <div class="container my-4">
     <div class="row g-3">
-      <!-- Chart 1 -->
+      {% for i in "12345678" %}
       <div class="col-12 col-md-6">
         <div class="card">
           <div class="card-body">
             <div class="ratio ratio-16x9">
-              <canvas id="chart1"></canvas>
+              <canvas id="chart{{ i }}"></canvas>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Chart 2 -->
-      <div class="col-12 col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <div class="ratio ratio-16x9">
-              <canvas id="chart2"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Chart 3 -->
-      <div class="col-12 col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <div class="ratio ratio-16x9">
-              <canvas id="chart3"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Chart 4 -->
-      <div class="col-12 col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <div class="ratio ratio-16x9">
-              <canvas id="chart4"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <div class="ratio ratio-16x9">
-              <canvas id="chart5"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <div class="ratio ratio-16x9">
-              <canvas id="chart6"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <div class="ratio ratio-16x9">
-              <canvas id="chart7"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <div class="ratio ratio-16x9">
-              <canvas id="chart8"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
+      {% endfor %}
     </div>
   </div>
 
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    const COLORS = [
+      "rgba(255, 99, 132, 0.4)",   // soft red
+      "rgba(54, 162, 235, 0.4)",   // soft blue
+      "rgba(255, 206, 86, 0.4)",   // light yellow
+      "rgba(255, 159, 243, 0.4)",  // soft pink
+      "rgba(153, 102, 255, 0.4)",  // light purple
+      "rgba(75, 192, 192, 0.4)",   // mint green / teal
+      "rgba(255, 215, 0, 0.4)"     // gold
+    ];
+
+    const charts = [];
+
     fetch("{% url 'myApp:chart_data'%}")
-      .then((response) => response.json())
-      .then((data) => {
-        new Chart(document.getElementById("chart1"), {
-          type: "bar",
-          data: {
-            labels: data.chart1.labels,
-            datasets: [
-              {
-                label: "Books",
-                data: data.chart1.values,
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.4)", // soft red
-                  "rgba(54, 162, 235, 0.4)", // soft blue
-                  "rgba(255, 206, 86, 0.4)", // light yellow
-                  "rgba(255, 159, 243, 0.4)", // soft pink
-                  "rgba(153, 102, 255, 0.4)", // light purple
-                  "rgba(75, 192, 192, 0.4)", // mint green / teal
-                  "rgba(255, 215, 0, 0.4)", // gold / light orange
-                ],
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "top",
-              },
-              title: {
-                display: true,
-                text: "Number of copies for each book",
-              },
+      .then(response => response.json())
+      .then(data => {
+        const chartConfigs = [
+          {id: "chart1", type: "bar", data: data.chart1, label: "Books", title: "Number of copies for each book"},
+          {id: "chart2", type: "bar", data: data.chart2, label: "Copies", title: "Number of copies for each Author"},
+          {id: "chart3", type: "bar", data: data.chart3, label: "Books", title: "Number of books for each Author"},
+          {id: "chart4", type: "bar", data: data.chart4, label: "Price($)", title: "Daily rent of each book"},
+          {id: "chart5", type: "line", data: data.chart5, label: "Times", title: "Number of times each book borrowed"},
+          {id: "chart6", type: "pie", data: data.chart6, label: "Books", title: "Number of unavailable(borrowed) books now"},
+          {id: "chart7", type: "bar", data: data.chart7, label: "Revenue($)", title: "Revenue for each book"},
+          {id: "chart8", type: "bar", data: data.chart8, label: "Revenue($)", title: "Revenue for each User"}
+        ];
+
+        chartConfigs.forEach(cfg => {
+          const chart = new Chart(document.getElementById(cfg.id), {
+            type: cfg.type,
+            data: {
+              labels: cfg.data.labels,
+              datasets: [{
+                label: cfg.label,
+                data: cfg.data.values,
+                backgroundColor: COLORS
+              }]
             },
-          },
-        });
-        new Chart(document.getElementById("chart2"), {
-          type: "bar",
-          data: {
-            labels: data.chart2.labels,
-            datasets: [
-              {
-                label: "Copies",
-                data: data.chart2.values,
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.4)", // soft red
-                  "rgba(54, 162, 235, 0.4)", // soft blue
-                  "rgba(255, 206, 86, 0.4)", // light yellow
-                  "rgba(255, 159, 243, 0.4)", // soft pink
-                  "rgba(153, 102, 255, 0.4)", // light purple
-                  "rgba(75, 192, 192, 0.4)", // mint green / teal
-                  "rgba(255, 215, 0, 0.4)", // gold / light orange
-                ],
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {position: "top"},
+                title: {display: true, text: cfg.title}
               },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "top",
-              },
-              title: {
-                display: true,
-                text: "Number of copies for each Author",
-              },
-            },
-          },
-        });
-        new Chart(document.getElementById("chart3"), {
-          type: "bar",
-          data: {
-            labels: data.chart3.labels,
-            datasets: [
-              {
-                label: "Books",
-                data: data.chart3.values,
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.4)", // soft red
-                  "rgba(54, 162, 235, 0.4)", // soft blue
-                  "rgba(255, 206, 86, 0.4)", // light yellow
-                  "rgba(255, 159, 243, 0.4)", // soft pink
-                  "rgba(153, 102, 255, 0.4)", // light purple
-                  "rgba(75, 192, 192, 0.4)", // mint green / teal
-                  "rgba(255, 215, 0, 0.4)", // gold / light orange
-                ],
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "top",
-              },
-              title: {
-                display: true,
-                text: "Number of books for each Author",
-              },
-            },
-          },
-        });
-        new Chart(document.getElementById("chart4"), {
-          type: "bar",
-          data: {
-            labels: data.chart4.labels,
-            datasets: [
-              {
-                label: "price($)",
-                data: data.chart4.values,
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.4)", // soft red
-                  "rgba(54, 162, 235, 0.4)", // soft blue
-                  "rgba(255, 206, 86, 0.4)", // light yellow
-                  "rgba(255, 159, 243, 0.4)", // soft pink
-                  "rgba(153, 102, 255, 0.4)", // light purple
-                  "rgba(75, 192, 192, 0.4)", // mint green / teal
-                  "rgba(255, 215, 0, 0.4)", // gold / light orange
-                ],
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "top",
-              },
-              title: {
-                display: true,
-                text: "Daily rent of each book",
-              },
-            },
-          },
-        });
-        new Chart(document.getElementById("chart5"), {
-          type: "line",
-          data: {
-            labels: data.chart5.labels,
-            datasets: [
-              {
-                label: "times",
-                data: data.chart5.values,
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.4)", // soft red
-                  "rgba(54, 162, 235, 0.4)", // soft blue
-                  "rgba(255, 206, 86, 0.4)", // light yellow
-                  "rgba(255, 159, 243, 0.4)", // soft pink
-                  "rgba(153, 102, 255, 0.4)", // light purple
-                  "rgba(75, 192, 192, 0.4)", // mint green / teal
-                  "rgba(255, 215, 0, 0.4)", // gold / light orange
-                ],
-              },
-            ],
-          },
-          options: {
-            scales: {
-              y: {
-                beginAtZero: true,
-              },
-            },
-            responsive: true, // allow it to resize inside Bootstrap grid
-            maintainAspectRatio: false, // so it fits the ratio container
-            plugins: {
-              legend: {
-                position: "top",
-              },
-              title: {
-                display: true,
-                text: "Number of times each book borrowed",
-              },
-            },
-          },
-        });
-        new Chart(document.getElementById("chart6"), {
-          type: "pie",
-          data: {
-            labels: data.chart6.labels,
-            datasets: [
-              {
-                label: "books",
-                data: data.chart6.values,
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.4)", // soft red
-                  "rgba(54, 162, 235, 0.4)", // soft blue
-                  "rgba(255, 206, 86, 0.4)", // light yellow
-                  "rgba(255, 159, 243, 0.4)", // soft pink
-                  "rgba(153, 102, 255, 0.4)", // light purple
-                  "rgba(75, 192, 192, 0.4)", // mint green / teal
-                  "rgba(255, 215, 0, 0.4)", // gold / light orange
-                ],
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "top",
-              },
-              title: {
-                display: true,
-                text: "Number of unavilable(borrowed) books now",
-              },
-            },
-          },
-        });
-        new Chart(document.getElementById("chart7"), {
-          type: "bar",
-          data: {
-            labels: data.chart7.labels,
-            datasets: [
-              {
-                label: "revenue($)",
-                data: data.chart7.values,
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.4)", // soft red
-                  "rgba(54, 162, 235, 0.4)", // soft blue
-                  "rgba(255, 206, 86, 0.4)", // light yellow
-                  "rgba(255, 159, 243, 0.4)", // soft pink
-                  "rgba(153, 102, 255, 0.4)", // light purple
-                  "rgba(75, 192, 192, 0.4)", // mint green / teal
-                  "rgba(255, 215, 0, 0.4)", // gold / light orange
-                ],
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "top",
-              },
-              title: {
-                display: true,
-                text: "Revenue for each book",
-              },
-            },
-          },
-        });
-        new Chart(document.getElementById("chart8"), {
-          type: "bar",
-          data: {
-            labels: data.chart8.labels,
-            datasets: [
-              {
-                label: "revenue($)",
-                data: data.chart8.values,
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.4)", // soft red
-                  "rgba(54, 162, 235, 0.4)", // soft blue
-                  "rgba(255, 206, 86, 0.4)", // light yellow
-                  "rgba(255, 159, 243, 0.4)", // soft pink
-                  "rgba(153, 102, 255, 0.4)", // light purple
-                  "rgba(75, 192, 192, 0.4)", // mint green / teal
-                  "rgba(255, 215, 0, 0.4)", // gold / light orange
-                ],
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "top",
-              },
-              title: {
-                display: true,
-                text: "Revenue for each User",
-              },
-            },
-          },
+              scales: cfg.type === "line" ? { y: { beginAtZero: true } } : {}
+            }
+          });
+          charts.push(chart);
         });
       });
+
+    document.getElementById('pdfForm').addEventListener('submit', function() {
+      charts.forEach((chart, index) => {
+        document.getElementById(`chart${index+1}_image_input`).value = chart.toBase64Image();
+      });
+    });
   </script>
-  {% endblock content %}
 </div>
+{% endblock content %}

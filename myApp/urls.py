@@ -18,5 +18,6 @@ urlpatterns = [
     path('my-borrows/', views.my_borrows_list, name='my_borrows_list'),
     path('return-book/<int:pk>/', views.return_book, name='return_book'),
     path('chart-data/', views.chart_data, name='chart_data'),
+    path('generate-report-pdf/', views.generate_report_pdf, name='generate_report_pdf'),
     path('', views.IndexTemplateView.as_view(), name='home'),
 ]

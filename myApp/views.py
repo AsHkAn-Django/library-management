@@ -10,6 +10,9 @@ from django.utils import timezone
 from django.http import JsonResponse
 from django.db.models import Sum
 from django.contrib.auth import get_user_model
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+import weasyprint
 
 
 from .models import Author, BookCopy, BorrowRecord, Book
@@ -388,3 +391,26 @@ def chart_data(request):
             }
         }
     )
+
+
+def generate_report_pdf(request):
+    if request.method == 'POST':
+        context = {
+            "main_books": Book.objects.all(),
+            "chart1_image": request.POST.get("chart1_image"),
+            "chart2_image": request.POST.get("chart2_image"),
+            "chart3_image": request.POST.get("chart3_image"),
+            "chart4_image": request.POST.get("chart4_image"),
+            "chart5_image": request.POST.get("chart5_image"),
+            "chart6_image": request.POST.get("chart6_image"),
+            "chart7_image": request.POST.get("chart7_image"),
+            "chart8_image": request.POST.get("chart8_image"),
+        }
+
+        html_string = render_to_string("myApp/books_report_pdf.html", context, request=request)
+
+        response = HttpResponse(content_type="application/pdf")
+        response['Content-Disposition'] = 'attachment; filename="books_report.pdf'
+
+        weasyprint.HTML(string=html_string).write_pdf(response)
+        return response

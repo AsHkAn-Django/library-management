@@ -49,43 +49,64 @@ def book_transactions(request):
         cd = form.cleaned_data
         barcode=cd['code']
         select=cd['select']
+        user=cd['user']
 
         book = BookCopy.objects.filter(barcode=barcode).first()
         if not book:
             messages.warning(request, "There is no book with the code you entered.")
             return redirect('myApp:transactions')
 
-        record = BorrowRecord.objects.filter(book=book).order_by('-borrowed_at').first()
+        record = BorrowRecord.objects.filter(book_copy=book).order_by('-borrowed_at').first()
 
         if select == 'Borrow':
-            if not cd['user']:
+            if not user:
                 messages.warning(request, "Please select a user to borrow the book.")
                 return redirect('myApp:transactions')
             if not record or record.returned_at:
-                if book.borrow():
+                if book.is_available:
                     if cd['rented_days']:
-                        BorrowRecord.objects.create(book=book, borrower=cd['user'], rented_days=cd['rented_days'])
+                        BorrowRecord.objects.create(
+                            book_copy=book, borrower=user, rented_days=cd['rented_days'])
                     else:
-                        BorrowRecord.objects.create(book=book, borrower=cd['user'])
-                    messages.success(request, f"The user ({cd['user']}) borrowed the book ({book.title}) successfully.")
+                        BorrowRecord.objects.create(
+                            book_copy=book, borrower=user)
+                    book.is_available = False
+                    book.save()
+                    messages.success(
+                        request,
+                        f"The user ({user}) borrowed the book ({book.book.title}) successfully.")
                 else:
                     messages.warning(request, "This book is out of stock.")
             else:
-                messages.warning(request, f"User ({cd['user']}) has already borrowed the book ({book.title}) and should return it.")
+                messages.warning(
+                    request,
+                    f"User ({record.borrower.username}) borrowed the book ({book.book.title}) and should return it.")
 
         elif select == 'Return':
             if record and not record.returned_at:
-                record.return_book()
-                messages.success(request, f"The book ({book.title}) has been returned successfully.")
-                return redirect('myApp:return-summary', pk=record.pk)
+                if record.borrower == user:
+                    book.is_available = True
+                    book.save()
+                    record.returned_at = timezone.now()
+                    record.save()
+                    messages.success(
+                                request,
+                                f"The book ({book.book.title}) has been returned successfully.")
+                    return redirect('myApp:return_summary', pk=record.pk)
+                else:
+                    messages.warning(
+                        request,
+                        f"This book ({book.book.title}) is borrowerd by another user.")
             else:
-                messages.warning(request, f"This book ({book.title}) is not borrowed to be returned.")
+                messages.warning(request, f"This book ({book.book.title}) is not borrowed.")
 
         elif select == 'Track':
             if record and not record.returned_at:
-                messages.info(request, f"The user ({record.borrower.username}) has the book ({book.title}).")
+                messages.info(
+                    request,
+                    f"The user ({record.borrower.username}) has the book ({book.book.title}).")
             else:
-                messages.info(request, f"The book ({book.title}) is in the library.")
+                messages.info(request, f"The book ({book.book.title}) is in the library.")
 
         return redirect('myApp:transactions')
     return render(request, 'myApp/transactions.html',
@@ -237,7 +258,8 @@ def borrow_book(request, pk):
 
     if BorrowRecord.objects.filter(
         book_copy__book=book,
-        borrower=request.user
+        borrower=request.user,
+        returned_at__isnull=True
         ).exists():
         messages.warning(
             request,

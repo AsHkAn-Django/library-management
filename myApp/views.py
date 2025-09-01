@@ -393,6 +393,8 @@ def chart_data(request):
     )
 
 
+@staff_member_required
+@login_required
 def generate_report_pdf(request):
     if request.method == 'POST':
         context = {
@@ -408,9 +410,7 @@ def generate_report_pdf(request):
         }
 
         html_string = render_to_string("myApp/books_report_pdf.html", context, request=request)
-
         response = HttpResponse(content_type="application/pdf")
         response['Content-Disposition'] = 'attachment; filename="books_report.pdf'
-
         weasyprint.HTML(string=html_string).write_pdf(response)
         return response

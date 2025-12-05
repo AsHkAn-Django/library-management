@@ -1,0 +1,42 @@
+name: Deploy Library to VPS
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    name: Deploy Library App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            # navigate to Library folder
+            cd /home/library_management
+
+            # pull latest code
+            git checkout .
+            git pull origin main
+
+            # restart docker containers
+            # this will read the docker-compose.yml which uses POrt 8001
+            docker compose down
+            docker compose up -d --build
+
+            # run migrations & static files
+            # note: we use '-T' to disable interactive mode
+            docker compose exec -T web python manage.py migrate
+            docker compose exec -T web python manage.py collectstatic --noinput
+
+            # clean up old images
+            docker system prune -f

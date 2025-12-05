@@ -409,8 +409,17 @@ def generate_report_pdf(request):
             "chart8_image": request.POST.get("chart8_image"),
         }
 
+        # Render HTML
         html_string = render_to_string("myApp/books_report_pdf.html", context, request=request)
+
+        # Define Base URL (Crucial for Docker)
+        # This tells WeasyPrint that "static/img.png" means "http://localhost:8000/static/img.png"
+        base_url = request.build_absolute_uri('/')
+
         response = HttpResponse(content_type="application/pdf")
-        response['Content-Disposition'] = 'attachment; filename="books_report.pdf'
-        weasyprint.HTML(string=html_string).write_pdf(response)
+        response['Content-Disposition'] = 'attachment; filename="books_report.pdf"'
+
+        # 3. Generate PDF with base_url
+        weasyprint.HTML(string=html_string, base_url=base_url).write_pdf(response)
+
         return response

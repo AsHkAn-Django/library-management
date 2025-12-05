@@ -38,6 +38,7 @@ CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', '').split(',')
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -188,4 +189,24 @@ LOGGING = {
             'propagate': True,
         },
     },
+}
+
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Library System",
+    "site_header": "Library Admin",
+    "site_brand": "Ashkan Library",
+    "welcome_sign": "Welcome to the Library Management Console",
+    "copyright": "Codewithashkan Ltd",
+    "search_model": ["myApp.Book", "myApp.Author", "myApp.BorrowRecord"],
+    "user_avatar": None,
+    "topmenu_links": [
+        {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "View Site", "url": "/"},
+    ],
+    "show_ui_builder": True,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "theme": "united",
 }

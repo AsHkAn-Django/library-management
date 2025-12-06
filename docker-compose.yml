@@ -1,6 +1,7 @@
 services:
   web:
     build: .
+    restart: always
     container_name: library_web
     command: gunicorn --bind 0.0.0.0:8000 library_management.wsgi:application
     volumes:
@@ -16,6 +17,7 @@ services:
       - db
   db:
     image: postgres:15
+    restart: always
     container_name: library_db
     volumes:
       - postgres_data:/var/lib/postgresql/data/
